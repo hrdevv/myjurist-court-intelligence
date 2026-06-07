@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     roles,
     loading,
     hasRole: (role) => roles.includes(role),
-    hasAnyRole: (rs) => rs.some((r) => roles.includes(r)),
+    hasAnyRole: (rs) => hasAnyRoleHelper(roles, rs),
     signOut: async () => {
       await supabase.auth.signOut();
     },
