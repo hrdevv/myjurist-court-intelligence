@@ -85,7 +85,7 @@ function ReviewDetail() {
               </div>
             ) : (
               <ol className="space-y-3">
-                {sourceSegments.map((seg) => seg && (
+                {sourceSegments.map((seg: ReturnType<typeof getSegment>) => seg && (
                   <li key={seg.id} className="border-l-2 border-primary/40 pl-3">
                     <div className="font-mono text-xs text-muted-foreground">{seg.timestamp}</div>
                     <div className="text-sm font-medium">{seg.speaker}</div>
