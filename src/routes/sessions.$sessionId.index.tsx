@@ -140,7 +140,7 @@ function EvidencePanel({ session }: { session: ReturnType<typeof getSession> ext
       </div>
 
       <ul className="space-y-2">
-        {session.evidence.map((e: import("@/lib/mock-data").EvidenceFile) => (
+        {session.evidence.map((e: EvidenceFile) => (
           <li key={e.id} className="text-sm flex items-start gap-2">
             <FileText className="size-4 mt-0.5 text-muted-foreground shrink-0" />
             <div className="min-w-0 flex-1">
