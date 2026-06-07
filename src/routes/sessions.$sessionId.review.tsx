@@ -108,7 +108,7 @@ function ReviewDetail() {
             </div>
             <p className="text-sm mb-3">{selected.text}</p>
             <div className="flex flex-wrap gap-2 mb-4">
-              {selected.anchors.length === 0 ? <AnchorBadge status="none" /> : selected.anchors.map((a: {segmentId:string;status:import("@/lib/mock-data").AnchorStatus}, i: number) => <AnchorBadge key={i} status={a.status} />)}
+              {selected.anchors.length === 0 ? <AnchorBadge status="none" /> : selected.anchors.map((a: ClaimAnchor, i: number) => <AnchorBadge key={i} status={a.status} />)}
             </div>
 
             {selected.warning && (
