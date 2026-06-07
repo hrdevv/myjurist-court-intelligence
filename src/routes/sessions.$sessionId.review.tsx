@@ -4,7 +4,7 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { getSession, getSegment, AIClaim, ReviewStatus } from "@/lib/mock-data";
+import { getSession, getSegment, type AIClaim, type ClaimAnchor, type ReviewStatus } from "@/lib/mock-data";
 import { AIDraftBadge, AnchorBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { Check, X, Pencil, HelpCircle, FileQuestion } from "lucide-react";
 
