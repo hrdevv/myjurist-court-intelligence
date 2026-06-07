@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
-import { sessions } from "@/lib/mock-data";
+import { sessions, type AIClaim, type Session } from "@/lib/mock-data";
 import { AnchorBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 
 export const Route = createFileRoute("/review")({
@@ -10,12 +10,15 @@ export const Route = createFileRoute("/review")({
 });
 
 function ReviewQueue() {
-  const all = sessions.flatMap(s => s.claims.map(c => ({ ...c, sessionId: s.id, sessionTitle: s.title })));
+  type QueueClaim = AIClaim & { sessionId: string; sessionTitle: string };
+  const all: QueueClaim[] = sessions.flatMap((s: Session) =>
+    s.claims.map((c: AIClaim) => ({ ...c, sessionId: s.id, sessionTitle: s.title })),
+  );
   return (
     <AppLayout>
       <PageHeader eyebrow="Workspace" title="Review queue" description="Every AI-assisted draft claim across sessions. Approve only what is anchored to verifiable evidence." />
       <div className="space-y-3">
-        {all.map(c => (
+        {all.map((c: QueueClaim) => (
           <Card key={c.id} className="p-4 flex flex-wrap items-start gap-4 hover:bg-accent/20 transition-colors">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap gap-2 mb-2">

@@ -39,13 +39,18 @@ export interface EvidenceFile {
   status: "demo_uploaded";
 }
 
+export interface ClaimAnchor {
+  segmentId: string;
+  status: AnchorStatus;
+}
+
 export interface AIClaim {
   id: string;
   type: ClaimType;
   text: string;
   confidence: ConfidenceLevel;
   support: "supported" | "partially_supported" | "unsupported";
-  anchors: { segmentId: string; status: AnchorStatus }[];
+  anchors: ClaimAnchor[];
   review: ReviewStatus;
   reviewerNote?: string;
   warning?: string;

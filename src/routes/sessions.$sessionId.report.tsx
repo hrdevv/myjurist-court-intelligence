@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getSession, getSegment, LEGAL_DISCLAIMER } from "@/lib/mock-data";
+import { getSession, getSegment, LEGAL_DISCLAIMER, type AIClaim, type ClaimAnchor } from "@/lib/mock-data";
 import { AnchorBadge, ConfidenceBadge } from "@/components/legal/Badges";
 import { AlertTriangle, Download, ShieldAlert } from "lucide-react";
 
@@ -20,10 +20,10 @@ export const Route = createFileRoute("/sessions/$sessionId/report")({
 
 function ReportPreview() {
   const { session } = Route.useLoaderData();
-  const approved = session.claims.filter((c: import("@/lib/mock-data").AIClaim) => c.review === "approved");
-  const inconsistencies = session.claims.filter((c: import("@/lib/mock-data").AIClaim) => c.type === "inconsistency_candidate");
-  const followUps = session.claims.filter((c: import("@/lib/mock-data").AIClaim) => c.review === "needs_more_evidence");
-  const excluded = session.claims.filter((c: import("@/lib/mock-data").AIClaim) => c.review === "rejected" || c.support === "unsupported");
+  const approved = session.claims.filter((c: AIClaim) => c.review === "approved");
+  const inconsistencies = session.claims.filter((c: AIClaim) => c.type === "inconsistency_candidate");
+  const followUps = session.claims.filter((c: AIClaim) => c.review === "needs_more_evidence");
+  const excluded = session.claims.filter((c: AIClaim) => c.review === "rejected" || c.support === "unsupported");
 
   return (
     <AppLayout>
@@ -50,12 +50,12 @@ function ReportPreview() {
             <Empty>No approved claims yet. Approve claims in the Review Console to populate this section.</Empty>
           ) : (
             <ul className="space-y-4">
-              {approved.map((c: import("@/lib/mock-data").AIClaim) => (
+              {approved.map((c: AIClaim) => (
                 <li key={c.id} className="border-l-2 border-success/50 pl-4">
                   <p className="text-sm">{c.text}</p>
                   <div className="flex flex-wrap gap-2 mt-2">
                     <ConfidenceBadge level={c.confidence} />
-                    {c.anchors.map((a: {segmentId:string;status:import("@/lib/mock-data").AnchorStatus}, i: number) => <AnchorBadge key={i} status={a.status} />)}
+                    {c.anchors.map((a: ClaimAnchor, i: number) => <AnchorBadge key={i} status={a.status} />)}
                   </div>
                 </li>
               ))}
@@ -65,7 +65,7 @@ function ReportPreview() {
 
         <Section title="2. Evidence references">
           <ul className="text-sm space-y-2">
-            {approved.flatMap((c: import("@/lib/mock-data").AIClaim) => c.anchors).map((a: {segmentId:string;status:import("@/lib/mock-data").AnchorStatus}, i: number) => {
+            {approved.flatMap((c: AIClaim) => c.anchors).map((a: ClaimAnchor, i: number) => {
               const seg = getSegment(a.segmentId);
               if (!seg) return null;
               return <li key={i} className="font-mono text-xs">[{seg.timestamp}] {seg.speaker}: "{seg.text}"</li>;
@@ -76,7 +76,7 @@ function ReportPreview() {
         <Section title="3. Possible inconsistency candidates">
           {inconsistencies.length === 0 ? <Empty>None recorded.</Empty> : (
             <ul className="space-y-3">
-              {inconsistencies.map((c: import("@/lib/mock-data").AIClaim) => (
+              {inconsistencies.map((c: AIClaim) => (
                 <li key={c.id} className="text-sm border-l-2 border-warning/50 pl-4">
                   <p>{c.text}</p>
                   <p className="text-xs text-muted-foreground mt-1 italic">Flagged as a possible inconsistency candidate. Requires human professional review.</p>
@@ -89,7 +89,7 @@ function ReportPreview() {
         <Section title="4. Unresolved issues / Follow-ups">
           {followUps.length === 0 ? <Empty>None recorded.</Empty> : (
             <ul className="space-y-2 text-sm">
-              {followUps.map((c: import("@/lib/mock-data").AIClaim) => <li key={c.id} className="border-l-2 border-info/50 pl-4">{c.text}</li>)}
+              {followUps.map((c: AIClaim) => <li key={c.id} className="border-l-2 border-info/50 pl-4">{c.text}</li>)}
             </ul>
           )}
         </Section>
@@ -102,7 +102,7 @@ function ReportPreview() {
           <p className="text-xs text-muted-foreground mb-3">These claims were rejected or had no verifiable evidence anchor. They are excluded from the body of the report.</p>
           {excluded.length === 0 ? <Empty>None.</Empty> : (
             <ul className="space-y-3">
-              {excluded.map((c: import("@/lib/mock-data").AIClaim) => (
+              {excluded.map((c: AIClaim) => (
                 <li key={c.id} className="text-sm border-l-2 border-destructive/50 pl-4">
                   <p className="line-through text-muted-foreground">{c.text}</p>
                   {c.warning && <p className="text-xs text-destructive mt-1 flex items-start gap-1.5"><AlertTriangle className="size-3.5 mt-0.5" />{c.warning}</p>}

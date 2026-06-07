@@ -4,7 +4,7 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { getSession, getSegment, AIClaim, ReviewStatus } from "@/lib/mock-data";
+import { getSession, getSegment, type AIClaim, type ClaimAnchor, type ReviewStatus } from "@/lib/mock-data";
 import { AIDraftBadge, AnchorBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { Check, X, Pencil, HelpCircle, FileQuestion } from "lucide-react";
 
@@ -33,12 +33,12 @@ const filters: { key: string; label: string; match: (c: AIClaim) => boolean }[] 
 function ReviewDetail() {
   const { session } = Route.useLoaderData();
   const [filter, setFilter] = useState("pending");
-  const [selectedId, setSelectedId] = useState(session.claims.find((c: import("@/lib/mock-data").AIClaim) => c.review === "pending")?.id ?? session.claims[0].id);
+  const [selectedId, setSelectedId] = useState(session.claims.find((c: AIClaim) => c.review === "pending")?.id ?? session.claims[0].id);
   const [note, setNote] = useState("");
 
   const filtered = useMemo(() => session.claims.filter(filters.find(f => f.key === filter)!.match), [session.claims, filter]);
-  const selected = session.claims.find((c: import("@/lib/mock-data").AIClaim) => c.id === selectedId) ?? filtered[0] ?? session.claims[0];
-  const sourceSegments = selected.anchors.map((a: {segmentId:string;status:import("@/lib/mock-data").AnchorStatus}) => getSegment(a.segmentId)).filter(Boolean);
+  const selected = session.claims.find((c: AIClaim) => c.id === selectedId) ?? filtered[0] ?? session.claims[0];
+  const sourceSegments = selected.anchors.map((a: ClaimAnchor) => getSegment(a.segmentId)).filter(Boolean);
 
   return (
     <AppLayout>
@@ -52,7 +52,7 @@ function ReviewDetail() {
       <div className="flex flex-wrap gap-2 mb-6">
         {filters.map(f => (
           <button key={f.key} onClick={() => setFilter(f.key)} className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${filter === f.key ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:bg-accent"}`}>
-            {f.label} <span className="ml-1 opacity-60">{session.claims.filter((c: import("@/lib/mock-data").AIClaim) => f.match(c)).length}</span>
+            {f.label} <span className="ml-1 opacity-60">{session.claims.filter((c: AIClaim) => f.match(c)).length}</span>
           </button>
         ))}
       </div>
@@ -62,7 +62,7 @@ function ReviewDetail() {
         <Card className="p-2 h-fit lg:sticky lg:top-6">
           <ul className="space-y-1">
             {filtered.length === 0 && <li className="p-4 text-sm text-muted-foreground">No claims match this filter.</li>}
-            {filtered.map((c: import("@/lib/mock-data").AIClaim) => (
+            {filtered.map((c: AIClaim) => (
               <li key={c.id}>
                 <button onClick={() => setSelectedId(c.id)} className={`w-full text-left p-3 rounded-md transition-colors ${selected.id === c.id ? "bg-accent" : "hover:bg-accent/50"}`}>
                   <div className="flex flex-wrap gap-1.5 mb-1.5"><ClaimTypeBadge type={c.type} /></div>
@@ -108,7 +108,7 @@ function ReviewDetail() {
             </div>
             <p className="text-sm mb-3">{selected.text}</p>
             <div className="flex flex-wrap gap-2 mb-4">
-              {selected.anchors.length === 0 ? <AnchorBadge status="none" /> : selected.anchors.map((a: {segmentId:string;status:import("@/lib/mock-data").AnchorStatus}, i: number) => <AnchorBadge key={i} status={a.status} />)}
+              {selected.anchors.length === 0 ? <AnchorBadge status="none" /> : selected.anchors.map((a: ClaimAnchor, i: number) => <AnchorBadge key={i} status={a.status} />)}
             </div>
 
             {selected.warning && (

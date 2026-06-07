@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getSession } from "@/lib/mock-data";
+import { getSession, type AIClaim, type ClaimAnchor, type EvidenceFile, type TranscriptSegment } from "@/lib/mock-data";
 import { AIDraftBadge, AnchorBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { FileText, Sparkles, ClipboardList, FileCheck, Upload, ShieldAlert, History, Pencil } from "lucide-react";
 
@@ -48,7 +48,7 @@ function SessionDetail() {
             <Button variant="ghost" size="sm"><Pencil className="size-4" /> Paste transcript (demo)</Button>
           </div>
           <ol className="space-y-4">
-            {session.transcript.map((seg: import("@/lib/mock-data").TranscriptSegment) => (
+            {session.transcript.map((seg: TranscriptSegment) => (
               <li key={seg.id} className="grid grid-cols-[80px_1fr_auto] gap-4 items-start text-sm border-l-2 border-border pl-4 hover:border-primary/50">
                 <span className="font-mono text-xs text-muted-foreground pt-1">{seg.timestamp}</span>
                 <div>
@@ -72,9 +72,9 @@ function SessionDetail() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span>Review pending</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Claims</span><span>{session.claims.length}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Pending</span><span>{session.claims.filter((c: import("@/lib/mock-data").AIClaim) => c.review === "pending").length}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Approved</span><span>{session.claims.filter((c: import("@/lib/mock-data").AIClaim) => c.review === "approved").length}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Rejected</span><span>{session.claims.filter((c: import("@/lib/mock-data").AIClaim) => c.review === "rejected").length}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Pending</span><span>{session.claims.filter((c: AIClaim) => c.review === "pending").length}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Approved</span><span>{session.claims.filter((c: AIClaim) => c.review === "approved").length}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Rejected</span><span>{session.claims.filter((c: AIClaim) => c.review === "rejected").length}</span></div>
             </div>
           </Card>
 
@@ -89,7 +89,7 @@ function SessionDetail() {
           <AIDraftBadge />
         </div>
         <div className="grid md:grid-cols-2 gap-4">
-          {session.claims.map((claim: import("@/lib/mock-data").AIClaim) => (
+          {session.claims.map((claim: AIClaim) => (
             <Card key={claim.id} className="p-5 flex flex-col gap-3">
               <div className="flex flex-wrap gap-2">
                 <ClaimTypeBadge type={claim.type} />
@@ -98,7 +98,7 @@ function SessionDetail() {
               </div>
               <p className="text-sm">{claim.text}</p>
               <div className="flex flex-wrap gap-2">
-                {claim.anchors.length === 0 ? <AnchorBadge status="none" /> : claim.anchors.map((a: {segmentId:string;status:import("@/lib/mock-data").AnchorStatus}, i: number) => <AnchorBadge key={i} status={a.status} />)}
+                {claim.anchors.length === 0 ? <AnchorBadge status="none" /> : claim.anchors.map((a: ClaimAnchor, i: number) => <AnchorBadge key={i} status={a.status} />)}
               </div>
               {claim.warning && (
                 <div className="text-xs flex items-start gap-2 bg-destructive/10 text-destructive border border-destructive/20 rounded-md p-2">
@@ -140,7 +140,7 @@ function EvidencePanel({ session }: { session: ReturnType<typeof getSession> ext
       </div>
 
       <ul className="space-y-2">
-        {session.evidence.map((e: import("@/lib/mock-data").EvidenceFile) => (
+        {session.evidence.map((e: EvidenceFile) => (
           <li key={e.id} className="text-sm flex items-start gap-2">
             <FileText className="size-4 mt-0.5 text-muted-foreground shrink-0" />
             <div className="min-w-0 flex-1">
