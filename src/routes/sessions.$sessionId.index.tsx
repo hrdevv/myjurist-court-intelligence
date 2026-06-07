@@ -89,7 +89,7 @@ function SessionDetail() {
           <AIDraftBadge />
         </div>
         <div className="grid md:grid-cols-2 gap-4">
-          {session.claims.map((claim: import("@/lib/mock-data").AIClaim) => (
+          {session.claims.map((claim: AIClaim) => (
             <Card key={claim.id} className="p-5 flex flex-col gap-3">
               <div className="flex flex-wrap gap-2">
                 <ClaimTypeBadge type={claim.type} />
