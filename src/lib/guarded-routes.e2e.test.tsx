@@ -59,7 +59,13 @@ describe("guarded routes (e2e loader checks)", () => {
 
     it.each(allowedRoles)("loads normally for allowed role %s", async (role: AppRole) => {
       mockBackendForRoles([role]);
-      await expect(loader(args)).resolves.not.toThrow();
+      let thrown: unknown;
+      try {
+        await loader(args);
+      } catch (e) {
+        thrown = e;
+      }
+      expect(thrown).toBeUndefined();
     });
 
     it.each(deniedRoles)(
