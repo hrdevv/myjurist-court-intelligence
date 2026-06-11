@@ -12,7 +12,9 @@ import { ROLE_GROUPS, type AppRole, type RoleGroup } from "@/lib/permissions";
  * so loaders can reuse them without an extra round-trip.
  */
 export async function guardRouteAccess(group: RoleGroup): Promise<{ roles: AppRole[] }> {
-  const { authorized, roles } = await authorizeRoute({ data: { allowed: ROLE_GROUPS[group] } });
+  const { authorized, roles } = await authorizeRoute({
+    data: { allowed: ROLE_GROUPS[group], surface: group },
+  });
   if (!authorized) {
     throw redirect({ to: "/unauthorized", search: { from: group } });
   }
