@@ -1,17 +1,15 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { sessions, type AIClaim, type Session } from "@/lib/mock-data";
 import { ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
-import { authorizeRoute } from "@/lib/permissions.functions";
-import { ROLE_GROUPS } from "@/lib/permissions";
+import { guardRouteAccess } from "@/lib/route-guards";
 
 export const Route = createFileRoute("/_authenticated/review")({
   head: () => ({ meta: [{ title: "Review Queue — Courtroom Intelligence" }, { name: "description", content: "All AI-assisted draft claims awaiting human review." }] }),
   loader: async () => {
-    const { authorized } = await authorizeRoute({ data: { allowed: ROLE_GROUPS.reviewQueue } });
-    if (!authorized) throw redirect({ to: "/unauthorized" });
+    await guardRouteAccess("reviewQueue");
   },
   errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
   component: ReviewQueue,

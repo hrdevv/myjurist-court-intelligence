@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
@@ -7,15 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { getSession, type AIClaim, type TranscriptSegment } from "@/lib/mock-data";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList, resolveAnchorSegments } from "@/lib/claim-rendering";
-import { authorizeRoute } from "@/lib/permissions.functions";
-import { ROLE_GROUPS } from "@/lib/permissions";
+import { guardRouteAccess } from "@/lib/route-guards";
 import { Check, X, Pencil, HelpCircle, FileQuestion } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/review")({
   head: () => ({ meta: [{ title: "Review Console — Courtroom Intelligence" }, { name: "description", content: "Side-by-side review of AI-assisted draft claims." }] }),
   loader: async ({ params }) => {
-    const { authorized } = await authorizeRoute({ data: { allowed: ROLE_GROUPS.reviewQueue } });
-    if (!authorized) throw redirect({ to: "/unauthorized" });
+    await guardRouteAccess("reviewQueue");
     const s = getSession(params.sessionId);
     if (!s) throw notFound();
     return { session: s };
