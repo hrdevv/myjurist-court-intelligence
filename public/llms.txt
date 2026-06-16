@@ -1,0 +1,13 @@
+# myJurist — Court Intelligence
+
+> Reliability-first legal-session intelligence workspace. AI-assisted document and transcript analysis with human-reviewed court intelligence for legal teams.
+
+myJurist helps legal teams turn court-session recordings and transcripts into reviewed, evidence-linked claims and reports. Every AI-assisted draft is verified by a human reviewer before it reaches a report, with role-based access for viewers, reviewers, and lawyers.
+
+## Pages
+
+- [Sign in](/auth): Secure sign-in to the myJurist Court Intelligence workspace.
+
+## Optional
+
+- [Home](/): Workspace dashboard (requires sign-in).
