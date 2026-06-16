@@ -5,7 +5,7 @@ import { mockUsers } from "@/lib/mock-data";
 import { guardRouteAccess } from "@/lib/route-guards";
 
 export const Route = createFileRoute("/_authenticated/team")({
-  head: () => ({ meta: [{ title: "Team — Courtroom Intelligence" }, { name: "description", content: "Organization members and roles." }] }),
+  head: () => ({ meta: [{ title: "Team — Courtroom Intelligence" }, { name: "description", content: "View organization members and their roles, and manage role-based access for viewers, reviewers, and lawyers in your workspace." }] }),
   loader: async () => {
     await guardRouteAccess("team");
   },

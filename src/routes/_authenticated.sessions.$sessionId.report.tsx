@@ -8,7 +8,7 @@ import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { AlertTriangle, Download, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/report")({
-  head: () => ({ meta: [{ title: "Report Preview — Courtroom Intelligence" }, { name: "description", content: "Human-reviewed report preview." }] }),
+  head: () => ({ meta: [{ title: "Report Preview — Courtroom Intelligence" }, { name: "description", content: "Preview the human-reviewed report for this legal session, with each approved claim linked to its supporting transcript evidence." }] }),
   loader: ({ params }) => {
     const s = getSession(params.sessionId);
     if (!s) throw notFound();

@@ -13,7 +13,7 @@ import { FileText, Sparkles, ClipboardList, FileCheck, Upload, ShieldAlert, Hist
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/")({
   head: ({ params }) => {
     const s = getSession(params.sessionId);
-    return { meta: [{ title: `${s?.title ?? "Session"} — Courtroom Intelligence` }, { name: "description", content: "Legal session workspace." }] };
+    return { meta: [{ title: `${s?.title ?? "Session"} — Courtroom Intelligence` }, { name: "description", content: `Workspace for ${s?.title ?? "this legal session"}: review the transcript, AI-assisted draft claims, linked evidence, and prepare the human-reviewed report.` }] };
   },
   loader: ({ params }) => {
     const s = getSession(params.sessionId);
@@ -60,7 +60,7 @@ function SessionDetail() {
                     <span className="inline-flex items-center gap-1"><History className="size-3" /> v{seg.version}</span>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm"><Pencil className="size-3.5" /></Button>
+                <Button variant="ghost" size="sm" aria-label={`Edit transcript segment from ${seg.speaker}`}><Pencil className="size-3.5" /></Button>
               </li>
             ))}
           </ol>

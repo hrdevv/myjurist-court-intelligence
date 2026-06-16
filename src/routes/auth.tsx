@@ -87,7 +87,7 @@ function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <main className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="flex items-center gap-2 justify-center mb-6">
           <div className="size-10 rounded-md bg-primary text-primary-foreground flex items-center justify-center">
@@ -147,6 +147,6 @@ function AuthPage() {
           <Link to="/auth" className="hover:underline">myJurist</Link> · Authorized personnel only
         </p>
       </div>
-    </div>
+    </main>
   );
 }

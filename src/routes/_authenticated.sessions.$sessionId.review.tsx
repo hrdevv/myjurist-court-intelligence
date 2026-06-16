@@ -11,7 +11,7 @@ import { guardRouteAccess } from "@/lib/route-guards";
 import { Check, X, Pencil, HelpCircle, FileQuestion } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/review")({
-  head: () => ({ meta: [{ title: "Review Console — Courtroom Intelligence" }, { name: "description", content: "Side-by-side review of AI-assisted draft claims." }] }),
+  head: () => ({ meta: [{ title: "Review Console — Courtroom Intelligence" }, { name: "description", content: "Side-by-side review of AI-assisted draft claims against transcript evidence, with controls to approve, edit, or reject each claim." }] }),
   loader: async ({ params }) => {
     await guardRouteAccess("reviewQueue");
     const s = getSession(params.sessionId);

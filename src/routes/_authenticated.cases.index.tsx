@@ -6,7 +6,7 @@ import { cases } from "@/lib/mock-data";
 import { Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/cases/")({
-  head: () => ({ meta: [{ title: "Cases — Courtroom Intelligence" }, { name: "description", content: "All active and archived cases." }] }),
+  head: () => ({ meta: [{ title: "Cases — Courtroom Intelligence" }, { name: "description", content: "Manage all active and archived legal cases, track sessions pending review, and open case files scoped to your role and organization." }] }),
   component: CasesIndex,
 });
 
