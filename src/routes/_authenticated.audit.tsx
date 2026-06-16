@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { guardRouteAccess } from "@/lib/route-guards";
 
 export const Route = createFileRoute("/_authenticated/audit")({
-  head: () => ({ meta: [{ title: "Audit — Courtroom Intelligence" }, { name: "description", content: "Audit trail handoff notes." }] }),
+  head: () => ({ meta: [{ title: "Audit — Courtroom Intelligence" }, { name: "description", content: "Review the append-only audit trail of every claim approval, rejection, evidence upload, and transcript edit across your legal sessions." }] }),
   loader: async () => {
     await guardRouteAccess("audit");
   },

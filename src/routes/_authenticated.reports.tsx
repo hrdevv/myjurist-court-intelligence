@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { sessions } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/_authenticated/reports")({
-  head: () => ({ meta: [{ title: "Reports — Courtroom Intelligence" }, { name: "description", content: "Report previews." }] }),
+  head: () => ({ meta: [{ title: "Reports — Courtroom Intelligence" }, { name: "description", content: "Preview and export human-reviewed legal session reports, with every claim verified and linked to its supporting evidence." }] }),
   component: Reports,
 });
 
