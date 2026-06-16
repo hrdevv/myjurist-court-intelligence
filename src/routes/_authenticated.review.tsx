@@ -7,7 +7,7 @@ import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { guardRouteAccess } from "@/lib/route-guards";
 
 export const Route = createFileRoute("/_authenticated/review")({
-  head: () => ({ meta: [{ title: "Review Queue — Courtroom Intelligence" }, { name: "description", content: "All AI-assisted draft claims awaiting human review." }] }),
+  head: () => ({ meta: [{ title: "Review Queue — Courtroom Intelligence" }, { name: "description", content: "Work through all AI-assisted draft claims awaiting human review, approve evidence-linked statements, and flag unsupported inferences." }] }),
   loader: async () => {
     await guardRouteAccess("reviewQueue");
   },
