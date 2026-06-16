@@ -147,6 +147,6 @@ function AuthPage() {
           <Link to="/auth" className="hover:underline">myJurist</Link> · Authorized personnel only
         </p>
       </div>
-    </div>
+    </main>
   );
 }
