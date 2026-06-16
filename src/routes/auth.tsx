@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,16 +63,23 @@ function AuthPage() {
   const handleGoogle = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: window.location.origin,
-        },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
       });
-      if (error) throw error;
-      if (data.url) {
-        window.location.href = data.url;
+
+      if (result.error) {
+        toast.error(result.error instanceof Error ? result.error.message : "Google sign-in failed. Please try again.");
+        setLoading(false);
+        return;
       }
+
+      if (result.redirected) {
+        // Browser is redirecting to Google — nothing more to do.
+        return;
+      }
+
+      // Session is set — go to the app.
+      navigate({ to: "/" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Google sign-in failed. Please try again.");
       setLoading(false);
