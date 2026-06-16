@@ -13,7 +13,7 @@ import { FileText, Sparkles, ClipboardList, FileCheck, Upload, ShieldAlert, Hist
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/")({
   head: ({ params }) => {
     const s = getSession(params.sessionId);
-    return { meta: [{ title: `${s?.title ?? "Session"} — Courtroom Intelligence` }, { name: "description", content: "Legal session workspace." }] };
+    return { meta: [{ title: `${s?.title ?? "Session"} — Courtroom Intelligence` }, { name: "description", content: `Workspace for ${s?.title ?? "this legal session"}: review the transcript, AI-assisted draft claims, linked evidence, and prepare the human-reviewed report.` }] };
   },
   loader: ({ params }) => {
     const s = getSession(params.sessionId);
