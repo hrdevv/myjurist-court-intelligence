@@ -60,7 +60,7 @@ function SessionDetail() {
                     <span className="inline-flex items-center gap-1"><History className="size-3" /> v{seg.version}</span>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm"><Pencil className="size-3.5" /></Button>
+                <Button variant="ghost" size="sm" aria-label={`Edit transcript segment from ${seg.speaker}`}><Pencil className="size-3.5" /></Button>
               </li>
             ))}
           </ol>

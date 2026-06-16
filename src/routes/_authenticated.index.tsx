@@ -36,7 +36,7 @@ function Dashboard() {
     <AppLayout>
       <PageHeader
         eyebrow="Workspace"
-        title="Good afternoon, Paralegal User"
+        title="Legal Session Intelligence Workspace"
         description="Track active cases, review AI-assisted draft claims, and prepare human-reviewed reports."
         actions={
           <>
