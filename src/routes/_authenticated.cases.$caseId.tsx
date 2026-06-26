@@ -3,6 +3,7 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { getCase, sessions } from "@/lib/mock-data";
+import { requireSession } from "@/lib/route-guards";
 import { Button } from "@/components/ui/button";
 import { FileText, Upload } from "lucide-react";
 
