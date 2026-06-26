@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { getSession, getSegment, LEGAL_DISCLAIMER, type AIClaim, type ClaimAnchor } from "@/lib/mock-data";
 import { ConfidenceBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
+import { requireSession } from "@/lib/route-guards";
 import { AlertTriangle, Download, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/report")({
