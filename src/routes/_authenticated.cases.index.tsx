@@ -3,10 +3,15 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cases } from "@/lib/mock-data";
+import { requireSession } from "@/lib/route-guards";
 import { Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/cases/")({
   head: () => ({ meta: [{ title: "Cases — Courtroom Intelligence" }, { name: "description", content: "Manage all active and archived legal cases, track sessions pending review, and open case files scoped to your role and organization." }] }),
+  loader: async () => {
+    await requireSession();
+  },
+  errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
   component: CasesIndex,
 });
 
