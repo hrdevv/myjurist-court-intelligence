@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { getSession, type AIClaim, type EvidenceFile, type TranscriptSegment } from "@/lib/mock-data";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
+import { requireSession } from "@/lib/route-guards";
 import { FileText, Sparkles, ClipboardList, FileCheck, Upload, ShieldAlert, History, Pencil } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/")({
