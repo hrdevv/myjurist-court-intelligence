@@ -11,7 +11,8 @@ export const Route = createFileRoute("/_authenticated/cases/$caseId")({
     const c = getCase(params.caseId);
     return { meta: [{ title: `${c?.title ?? "Case"} — Courtroom Intelligence` }, { name: "description", content: c?.reference ?? "Case detail" }] };
   },
-  loader: ({ params }) => {
+  loader: async ({ params }) => {
+    await requireSession();
     const c = getCase(params.caseId);
     if (!c) throw notFound();
     return { caseData: c };
