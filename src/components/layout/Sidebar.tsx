@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Briefcase, ClipboardList, FileCheck, Shield, Users, Scale, LogOut } from "lucide-react";
+import { LayoutDashboard, Briefcase, ClipboardList, FileCheck, Shield, Users, Scale, LogOut, BookMarked } from "lucide-react";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -10,6 +10,7 @@ const nav: { to: string; label: string; icon: typeof LayoutDashboard; roles?: Ap
   { to: "/reports", label: "Reports", icon: FileCheck },
   { to: "/team", label: "Team", icon: Users, roles: ["lawyer", "paralegal"] },
   { to: "/audit", label: "Audit", icon: Shield, roles: ["lawyer", "reviewer"] },
+  { to: "/handoff", label: "Handoff", icon: BookMarked },
 ];
 
 export function Sidebar() {

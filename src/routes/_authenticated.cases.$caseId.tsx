@@ -3,6 +3,7 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { getCase, sessions } from "@/lib/mock-data";
+import { requireSession } from "@/lib/route-guards";
 import { Button } from "@/components/ui/button";
 import { FileText, Upload } from "lucide-react";
 
@@ -11,7 +12,8 @@ export const Route = createFileRoute("/_authenticated/cases/$caseId")({
     const c = getCase(params.caseId);
     return { meta: [{ title: `${c?.title ?? "Case"} — Courtroom Intelligence` }, { name: "description", content: c?.reference ?? "Case detail" }] };
   },
-  loader: ({ params }) => {
+  loader: async ({ params }) => {
+    await requireSession();
     const c = getCase(params.caseId);
     if (!c) throw notFound();
     return { caseData: c };

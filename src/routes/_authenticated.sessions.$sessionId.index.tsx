@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { getSession, type AIClaim, type EvidenceFile, type TranscriptSegment } from "@/lib/mock-data";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
+import { requireSession } from "@/lib/route-guards";
 import { FileText, Sparkles, ClipboardList, FileCheck, Upload, ShieldAlert, History, Pencil } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/")({
@@ -15,7 +16,8 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/")({
     const s = getSession(params.sessionId);
     return { meta: [{ title: `${s?.title ?? "Session"} — Courtroom Intelligence` }, { name: "description", content: `Workspace for ${s?.title ?? "this legal session"}: review the transcript, AI-assisted draft claims, linked evidence, and prepare the human-reviewed report.` }] };
   },
-  loader: ({ params }) => {
+  loader: async ({ params }) => {
+    await requireSession();
     const s = getSession(params.sessionId);
     if (!s) throw notFound();
     return { session: s };

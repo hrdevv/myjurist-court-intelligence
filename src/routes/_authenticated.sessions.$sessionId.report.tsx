@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { getSession, getSegment, LEGAL_DISCLAIMER, type AIClaim, type ClaimAnchor } from "@/lib/mock-data";
 import { ConfidenceBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
+import { requireSession } from "@/lib/route-guards";
 import { AlertTriangle, Download, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/report")({
   head: () => ({ meta: [{ title: "Report Preview — Courtroom Intelligence" }, { name: "description", content: "Preview the human-reviewed report for this legal session, with each approved claim linked to its supporting transcript evidence." }] }),
-  loader: ({ params }) => {
+  loader: async ({ params }) => {
+    await requireSession();
     const s = getSession(params.sessionId);
     if (!s) throw notFound();
     return { session: s };
