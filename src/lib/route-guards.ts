@@ -1,6 +1,21 @@
 import { redirect } from "@tanstack/react-router";
-import { authorizeRoute } from "@/lib/permissions.functions";
+import { authorizeRoute, requireAuthenticated } from "@/lib/permissions.functions";
 import { ROLE_GROUPS, type AppRole, type RoleGroup } from "@/lib/permissions";
+
+/**
+ * Server-side authentication guard for authenticated route loaders that need
+ * data but no specific role. Calls a `requireSupabaseAuth`-protected server fn,
+ * so the access decision is enforced on the server (validated bearer token) and
+ * cannot be bypassed by tampering with the client-only `_authenticated` gate.
+ * Redirects unauthenticated callers to `/auth`.
+ */
+export async function requireSession(): Promise<{ userId: string }> {
+  try {
+    return await requireAuthenticated();
+  } catch {
+    throw redirect({ to: "/auth" });
+  }
+}
 
 /**
  * Single shared permission/redirect guard for route loaders.
