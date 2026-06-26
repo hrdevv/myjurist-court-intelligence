@@ -63,3 +63,16 @@ export const authorizeRoute = createServerFn({ method: "POST" })
 
     return { roles, authorized };
   });
+
+/**
+ * Lightweight server-side authentication guard. Forces a real, server-validated
+ * bearer-token check (via `requireSupabaseAuth`) for any route loader that
+ * fetches data but does not require a specific role. This backs the browser-only
+ * `_authenticated` layout gate with genuine server-side enforcement, so the
+ * redirect cannot be bypassed once real data is wired in.
+ */
+export const requireAuthenticated = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ userId: string }> => {
+    return { userId: context.userId };
+  });
