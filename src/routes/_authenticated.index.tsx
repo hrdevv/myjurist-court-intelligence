@@ -3,6 +3,7 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cases, dashboardMetrics, recentActivity } from "@/lib/mock-data";
+import { requireSession } from "@/lib/route-guards";
 import { Plus, ClipboardList, ArrowRight, Briefcase, AlertTriangle, FileCheck, Hourglass } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -12,6 +13,10 @@ export const Route = createFileRoute("/_authenticated/")({
       { name: "description", content: "Reliability-first legal-session intelligence workspace." },
     ],
   }),
+  loader: async () => {
+    await requireSession();
+  },
+  errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
   component: Dashboard,
 });
 
