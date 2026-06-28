@@ -18,7 +18,8 @@ function Team() {
     <AppLayout>
       <PageHeader eyebrow="Demo Legal Practice" title="Team" description="Role-based access will be enforced server-side in production." />
       <Card className="p-0 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[480px]">
           <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
             <tr><th className="text-left px-5 py-3 font-medium">Name</th><th className="text-left px-5 py-3 font-medium">Role</th><th className="text-left px-5 py-3 font-medium">Email</th></tr>
           </thead>
@@ -32,6 +33,7 @@ function Team() {
             ))}
           </tbody>
         </table>
+        </div>
       </Card>
     </AppLayout>
   );
