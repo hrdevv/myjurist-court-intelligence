@@ -25,7 +25,8 @@ function CasesIndex() {
         actions={<Button><Plus className="size-4" /> Create case</Button>}
       />
       <Card className="p-0 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[760px]">
           <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="text-left px-5 py-3 font-medium">Title</th>
@@ -51,6 +52,7 @@ function CasesIndex() {
             ))}
           </tbody>
         </table>
+        </div>
       </Card>
     </AppLayout>
   );

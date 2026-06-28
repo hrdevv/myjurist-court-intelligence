@@ -24,7 +24,8 @@ function Audit() {
     <AppLayout>
       <PageHeader eyebrow="Compliance" title="Audit trail" description="Prototype data. Production audit logs will be append-only and exportable." />
       <Card className="p-0 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[520px]">
           <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
             <tr><th className="text-left px-5 py-3 font-medium">When</th><th className="text-left px-5 py-3 font-medium">Who</th><th className="text-left px-5 py-3 font-medium">Action</th></tr>
           </thead>
@@ -32,6 +33,7 @@ function Audit() {
             {entries.map((e, i) => (<tr key={i}><td className="px-5 py-3 font-mono text-xs">{e.when}</td><td className="px-5 py-3">{e.who}</td><td className="px-5 py-3 text-muted-foreground">{e.action}</td></tr>))}
           </tbody>
         </table>
+        </div>
       </Card>
     </AppLayout>
   );
