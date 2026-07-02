@@ -88,4 +88,5 @@ export function ScrollableTable({
 
 /** Apply to a table's <thead> so its header row sticks while scrolling. */
 export const stickyTableHeaderClass =
-  "sticky top-0 z-10 [&_th]:sticky [&_th]:top-0";
+  "sticky top-0 z-10 [&_th]:sticky [&_th]:top-0 [&_th]:bg-muted";
+
