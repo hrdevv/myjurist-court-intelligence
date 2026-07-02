@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
+import { ScrollableTable, stickyTableHeaderClass } from "@/components/ui/scrollable-table";
 import { mockUsers } from "@/lib/mock-data";
 import { guardRouteAccess } from "@/lib/route-guards";
 
