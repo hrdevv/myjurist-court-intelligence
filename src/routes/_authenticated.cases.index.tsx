@@ -53,7 +53,7 @@ function CasesIndex() {
             ))}
           </tbody>
         </table>
-        </div>
+        </ScrollableTable>
       </Card>
     </AppLayout>
   );
