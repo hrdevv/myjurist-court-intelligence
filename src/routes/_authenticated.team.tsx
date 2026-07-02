@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
+import { ScrollableTable, stickyTableHeaderClass } from "@/components/ui/scrollable-table";
 import { mockUsers } from "@/lib/mock-data";
 import { guardRouteAccess } from "@/lib/route-guards";
 
@@ -18,9 +19,9 @@ function Team() {
     <AppLayout>
       <PageHeader eyebrow="Demo Legal Practice" title="Team" description="Role-based access will be enforced server-side in production." />
       <Card className="p-0 overflow-hidden">
-        <div className="overflow-x-auto">
+        <ScrollableTable>
         <table className="w-full text-sm min-w-[480px]">
-          <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
+          <thead className={`bg-muted text-xs uppercase tracking-wider text-muted-foreground ${stickyTableHeaderClass}`}>
             <tr><th className="text-left px-5 py-3 font-medium">Name</th><th className="text-left px-5 py-3 font-medium">Role</th><th className="text-left px-5 py-3 font-medium">Email</th></tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -33,7 +34,7 @@ function Team() {
             ))}
           </tbody>
         </table>
-        </div>
+        </ScrollableTable>
       </Card>
     </AppLayout>
   );

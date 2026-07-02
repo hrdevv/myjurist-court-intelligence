@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ScrollableTable, stickyTableHeaderClass } from "@/components/ui/scrollable-table";
 import { cases } from "@/lib/mock-data";
 import { requireSession } from "@/lib/route-guards";
 import { Plus } from "lucide-react";
@@ -25,9 +26,9 @@ function CasesIndex() {
         actions={<Button><Plus className="size-4" /> Create case</Button>}
       />
       <Card className="p-0 overflow-hidden">
-        <div className="overflow-x-auto">
+        <ScrollableTable>
         <table className="w-full text-sm min-w-[760px]">
-          <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
+          <thead className={`bg-muted text-xs uppercase tracking-wider text-muted-foreground ${stickyTableHeaderClass}`}>
             <tr>
               <th className="text-left px-5 py-3 font-medium">Title</th>
               <th className="text-left px-5 py-3 font-medium">Reference</th>
@@ -52,7 +53,7 @@ function CasesIndex() {
             ))}
           </tbody>
         </table>
-        </div>
+        </ScrollableTable>
       </Card>
     </AppLayout>
   );

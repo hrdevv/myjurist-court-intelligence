@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
+import { ScrollableTable, stickyTableHeaderClass } from "@/components/ui/scrollable-table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { getCase, sessions } from "@/lib/mock-data";
 import { requireSession } from "@/lib/route-guards";
@@ -73,9 +74,9 @@ function CaseDetail() {
 
         <TabsContent value="sessions" className="mt-6">
           <Card className="p-0 overflow-hidden">
-            <div className="overflow-x-auto">
+            <ScrollableTable>
             <table className="w-full text-sm min-w-[560px]">
-              <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
+              <thead className={`bg-muted text-xs uppercase tracking-wider text-muted-foreground ${stickyTableHeaderClass}`}>
                 <tr><th className="text-left px-5 py-3 font-medium">Session</th><th className="text-left px-5 py-3 font-medium">Date</th><th className="text-left px-5 py-3 font-medium">Status</th><th className="px-5 py-3"></th></tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -89,7 +90,7 @@ function CaseDetail() {
                 ))}
               </tbody>
             </table>
-            </div>
+            </ScrollableTable>
           </Card>
         </TabsContent>
 
@@ -101,14 +102,14 @@ function CaseDetail() {
         </TabsContent>
         <TabsContent value="team" className="mt-6">
           <Card className="p-0 overflow-hidden">
-            <div className="overflow-x-auto">
+            <ScrollableTable>
             <table className="w-full text-sm min-w-[480px]">
-              <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground"><tr><th className="text-left px-5 py-3 font-medium">Name</th><th className="text-left px-5 py-3 font-medium">Role</th><th className="text-left px-5 py-3 font-medium">Email</th></tr></thead>
+              <thead className={`bg-muted text-xs uppercase tracking-wider text-muted-foreground ${stickyTableHeaderClass}`}><tr><th className="text-left px-5 py-3 font-medium">Name</th><th className="text-left px-5 py-3 font-medium">Role</th><th className="text-left px-5 py-3 font-medium">Email</th></tr></thead>
               <tbody className="divide-y divide-border">
                 {caseData.team.map((m: {name:string;role:string;email:string}) => (<tr key={m.email}><td className="px-5 py-3 font-medium">{m.name}</td><td className="px-5 py-3 text-muted-foreground">{m.role}</td><td className="px-5 py-3 text-muted-foreground">{m.email}</td></tr>))}
               </tbody>
             </table>
-            </div>
+            </ScrollableTable>
           </Card>
         </TabsContent>
         <TabsContent value="audit" className="mt-6">
