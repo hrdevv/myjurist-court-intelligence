@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ScrollableTable, stickyTableHeaderClass } from "@/components/ui/scrollable-table";
 import { cases } from "@/lib/mock-data";
 import { requireSession } from "@/lib/route-guards";
 import { Plus } from "lucide-react";
