@@ -74,9 +74,9 @@ function CaseDetail() {
 
         <TabsContent value="sessions" className="mt-6">
           <Card className="p-0 overflow-hidden">
-            <div className="overflow-x-auto">
+            <ScrollableTable>
             <table className="w-full text-sm min-w-[560px]">
-              <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
+              <thead className={`bg-muted text-xs uppercase tracking-wider text-muted-foreground ${stickyTableHeaderClass}`}>
                 <tr><th className="text-left px-5 py-3 font-medium">Session</th><th className="text-left px-5 py-3 font-medium">Date</th><th className="text-left px-5 py-3 font-medium">Status</th><th className="px-5 py-3"></th></tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -90,7 +90,7 @@ function CaseDetail() {
                 ))}
               </tbody>
             </table>
-            </div>
+            </ScrollableTable>
           </Card>
         </TabsContent>
 
