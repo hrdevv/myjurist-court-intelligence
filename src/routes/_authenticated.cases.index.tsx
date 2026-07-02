@@ -26,9 +26,9 @@ function CasesIndex() {
         actions={<Button><Plus className="size-4" /> Create case</Button>}
       />
       <Card className="p-0 overflow-hidden">
-        <div className="overflow-x-auto">
+        <ScrollableTable>
         <table className="w-full text-sm min-w-[760px]">
-          <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
+          <thead className={`bg-muted text-xs uppercase tracking-wider text-muted-foreground ${stickyTableHeaderClass}`}>
             <tr>
               <th className="text-left px-5 py-3 font-medium">Title</th>
               <th className="text-left px-5 py-3 font-medium">Reference</th>
