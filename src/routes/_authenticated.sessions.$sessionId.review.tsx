@@ -4,7 +4,9 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { getSession, type AIClaim, type TranscriptSegment } from "@/lib/mock-data";
+import { type AIClaim, type TranscriptSegment } from "@/lib/mock-data";
+import { getSessionById } from "@/lib/sessions.functions";
+import { buildSessionView } from "@/lib/session-content";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList, resolveAnchorSegments } from "@/lib/claim-rendering";
 import { guardRouteAccess } from "@/lib/route-guards";
@@ -14,9 +16,9 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/review
   head: () => ({ meta: [{ title: "Review Console — Courtroom Intelligence" }, { name: "description", content: "Side-by-side review of AI-assisted draft claims against transcript evidence, with controls to approve, edit, or reject each claim." }] }),
   loader: async ({ params }) => {
     await guardRouteAccess("reviewQueue");
-    const s = getSession(params.sessionId);
-    if (!s) throw notFound();
-    return { session: s };
+    const row = await getSessionById({ data: { id: params.sessionId } });
+    if (!row) throw notFound();
+    return { session: buildSessionView(row) };
   },
   notFoundComponent: () => <AppLayout><PageHeader title="Session not found" /></AppLayout>,
   errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
