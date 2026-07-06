@@ -39,7 +39,7 @@ function sessionStatusLabel(status: string) {
 function CaseDetail() {
   const { caseData, sessions } = Route.useLoaderData();
   const team = teamForCase(caseData);
-  const pendingCount = sessions.filter((s) => s.status === "review_pending").length;
+  const pendingCount = sessions.filter((s: SessionRow) => s.status === "review_pending").length;
 
   return (
     <AppLayout>
@@ -125,7 +125,7 @@ function CaseDetail() {
           ) : (
             <Card className="p-5">
               <ul className="space-y-2 text-sm">
-                {sessions.map((s) => (
+                {sessions.map((s: SessionRow) => (
                   <li key={s.id}>
                     <Link to="/sessions/$sessionId/report" params={{ sessionId: s.id }} className="text-primary hover:underline">Preview report — {s.title} →</Link>
                   </li>
