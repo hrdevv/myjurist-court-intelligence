@@ -14,6 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          case_id: string | null
+          created_at: string
+          detail: Json | null
+          id: string
+          session_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          case_id?: string | null
+          created_at?: string
+          detail?: Json | null
+          id?: string
+          session_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          case_id?: string | null
+          created_at?: string
+          detail?: Json | null
+          id?: string
+          session_id?: string | null
+        }
+        Relationships: []
+      }
+      case_members: {
+        Row: {
+          case_id: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_members_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cases: {
+        Row: {
+          court: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_demo: boolean
+          reference: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          court?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_demo?: boolean
+          reference: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          court?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_demo?: boolean
+          reference?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -37,6 +135,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      sessions: {
+        Row: {
+          case_id: string
+          created_at: string
+          date: string | null
+          id: string
+          is_demo: boolean
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          date?: string | null
+          id?: string
+          is_demo?: boolean
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          date?: string | null
+          id?: string
+          is_demo?: boolean
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -68,6 +207,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_case_member: { Args: { _case_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "lawyer" | "paralegal" | "reviewer" | "viewer"
