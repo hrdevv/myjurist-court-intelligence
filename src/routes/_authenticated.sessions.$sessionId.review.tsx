@@ -38,12 +38,28 @@ const filters: { key: string; label: string; match: (c: AIClaim) => boolean }[] 
 function ReviewDetail() {
   const { session } = Route.useLoaderData();
   const [filter, setFilter] = useState("pending");
-  const [selectedId, setSelectedId] = useState(session.claims.find((c: AIClaim) => c.review === "pending")?.id ?? session.claims[0].id);
+  const [selectedId, setSelectedId] = useState(session.claims.find((c: AIClaim) => c.review === "pending")?.id ?? session.claims[0]?.id ?? "");
   const [note, setNote] = useState("");
 
   const filtered = useMemo(() => session.claims.filter(filters.find(f => f.key === filter)!.match), [session.claims, filter]);
   const selected = session.claims.find((c: AIClaim) => c.id === selectedId) ?? filtered[0] ?? session.claims[0];
-  const sourceSegments = resolveAnchorSegments(selected.anchors);
+  const sourceSegments = resolveAnchorSegments(selected?.anchors ?? []);
+
+  if (session.claims.length === 0 || !selected) {
+    return (
+      <AppLayout>
+        <PageHeader
+          eyebrow={`Review Console · ${session.title}`}
+          title="Review queue"
+          description="No AI-assisted draft claims yet. Generate a review draft from the session to populate the queue."
+          actions={<Button variant="outline" asChild><Link to="/sessions/$sessionId" params={{ sessionId: session.id }}>Back to session</Link></Button>}
+        />
+        <Card className="p-10 text-center text-sm text-muted-foreground">
+          Draft claims will appear here once generated for this session.
+        </Card>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
