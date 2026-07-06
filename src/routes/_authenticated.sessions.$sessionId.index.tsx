@@ -116,7 +116,7 @@ function SessionDetail() {
   );
 }
 
-function EvidencePanel({ session }: { session: ReturnType<typeof getSession> extends infer T ? NonNullable<T> : never }) {
+function EvidencePanel({ session }: { session: Session }) {
   return (
     <Card className="p-5">
       <div className="flex items-center justify-between mb-3">
