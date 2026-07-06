@@ -5,22 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getSession, type AIClaim, type EvidenceFile, type TranscriptSegment } from "@/lib/mock-data";
+import { type AIClaim, type EvidenceFile, type TranscriptSegment, type Session } from "@/lib/mock-data";
+import { getSessionById } from "@/lib/sessions.functions";
+import { buildSessionView } from "@/lib/session-content";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { requireSession } from "@/lib/route-guards";
 import { FileText, Sparkles, ClipboardList, FileCheck, Upload, ShieldAlert, History, Pencil } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/")({
-  head: ({ params }) => {
-    const s = getSession(params.sessionId);
-    return { meta: [{ title: `${s?.title ?? "Session"} — Courtroom Intelligence` }, { name: "description", content: `Workspace for ${s?.title ?? "this legal session"}: review the transcript, AI-assisted draft claims, linked evidence, and prepare the human-reviewed report.` }] };
-  },
+  head: () => ({ meta: [{ title: "Session — Courtroom Intelligence" }, { name: "description", content: "Session workspace: review the transcript, AI-assisted draft claims, linked evidence, and prepare the human-reviewed report." }] }),
   loader: async ({ params }) => {
     await requireSession();
-    const s = getSession(params.sessionId);
-    if (!s) throw notFound();
-    return { session: s };
+    const row = await getSessionById({ data: { id: params.sessionId } });
+    if (!row) throw notFound();
+    return { session: buildSessionView(row) };
   },
   notFoundComponent: () => <AppLayout><PageHeader title="Session not found" /></AppLayout>,
   errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
