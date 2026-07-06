@@ -2,7 +2,9 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getSession, getSegment, LEGAL_DISCLAIMER, type AIClaim, type ClaimAnchor } from "@/lib/mock-data";
+import { getSegment, LEGAL_DISCLAIMER, type AIClaim, type ClaimAnchor } from "@/lib/mock-data";
+import { getSessionById } from "@/lib/sessions.functions";
+import { buildSessionView } from "@/lib/session-content";
 import { ConfidenceBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { requireSession } from "@/lib/route-guards";
@@ -12,9 +14,9 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/report
   head: () => ({ meta: [{ title: "Report Preview — Courtroom Intelligence" }, { name: "description", content: "Preview the human-reviewed report for this legal session, with each approved claim linked to its supporting transcript evidence." }] }),
   loader: async ({ params }) => {
     await requireSession();
-    const s = getSession(params.sessionId);
-    if (!s) throw notFound();
-    return { session: s };
+    const row = await getSessionById({ data: { id: params.sessionId } });
+    if (!row) throw notFound();
+    return { session: buildSessionView(row) };
   },
   notFoundComponent: () => <AppLayout><PageHeader title="Session not found" /></AppLayout>,
   errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
