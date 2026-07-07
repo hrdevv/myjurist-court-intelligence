@@ -112,6 +112,59 @@ export type Database = {
         }
         Relationships: []
       }
+      evidence: {
+        Row: {
+          checksum: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          session_id: string
+          size_bytes: number | null
+          status: string
+          storage_path: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          checksum?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          session_id: string
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          checksum?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          session_id?: string
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -177,6 +230,94 @@ export type Database = {
           },
         ]
       }
+      transcript_segments: {
+        Row: {
+          confidence: string
+          created_at: string
+          created_by: string | null
+          end_ms: number | null
+          id: string
+          session_id: string
+          speaker: string
+          start_ms: number | null
+          text: string
+          timestamp_label: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          confidence?: string
+          created_at?: string
+          created_by?: string | null
+          end_ms?: number | null
+          id?: string
+          session_id: string
+          speaker?: string
+          start_ms?: number | null
+          text?: string
+          timestamp_label?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          confidence?: string
+          created_at?: string
+          created_by?: string | null
+          end_ms?: number | null
+          id?: string
+          session_id?: string
+          speaker?: string
+          start_ms?: number | null
+          text?: string
+          timestamp_label?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcript_segments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transcript_versions: {
+        Row: {
+          created_at: string
+          edited_by: string | null
+          id: string
+          segment_id: string
+          text: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          edited_by?: string | null
+          id?: string
+          segment_id: string
+          text: string
+          version: number
+        }
+        Update: {
+          created_at?: string
+          edited_by?: string | null
+          id?: string
+          segment_id?: string
+          text?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcript_versions_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "transcript_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -200,6 +341,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_session: { Args: { _session_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
