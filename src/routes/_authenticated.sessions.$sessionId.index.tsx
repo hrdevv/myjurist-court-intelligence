@@ -43,28 +43,7 @@ function SessionDetail() {
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Transcript */}
-        <Card className="lg:col-span-2 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-serif text-xl">Transcript</h2>
-            <Button variant="ghost" size="sm"><Pencil className="size-4" /> Paste transcript (demo)</Button>
-          </div>
-          <ol className="space-y-4">
-            {session.transcript.map((seg: TranscriptSegment) => (
-              <li key={seg.id} className="grid grid-cols-[80px_1fr_auto] gap-4 items-start text-sm border-l-2 border-border pl-4 hover:border-primary/50">
-                <span className="font-mono text-xs text-muted-foreground pt-1">{seg.timestamp}</span>
-                <div>
-                  <div className="font-medium text-foreground">{seg.speaker}</div>
-                  <p className="text-foreground/90 mt-0.5">{seg.text}</p>
-                  <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
-                    <ConfidenceBadge level={seg.confidence} />
-                    <span className="inline-flex items-center gap-1"><History className="size-3" /> v{seg.version}</span>
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm" aria-label={`Edit transcript segment from ${seg.speaker}`}><Pencil className="size-3.5" /></Button>
-              </li>
-            ))}
-          </ol>
-        </Card>
+        <TranscriptPanel sessionId={session.id} />
 
         {/* Right column */}
         <div className="space-y-6">
@@ -79,9 +58,10 @@ function SessionDetail() {
             </div>
           </Card>
 
-          <EvidencePanel session={session} />
+          <EvidencePanel sessionId={session.id} />
         </div>
       </div>
+
 
       {/* AI Claims */}
       <div className="mt-8">
