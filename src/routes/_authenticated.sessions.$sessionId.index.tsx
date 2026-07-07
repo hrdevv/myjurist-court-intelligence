@@ -2,16 +2,15 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { type AIClaim, type EvidenceFile, type TranscriptSegment, type Session } from "@/lib/mock-data";
+import { type AIClaim } from "@/lib/mock-data";
 import { getSessionById } from "@/lib/sessions.functions";
 import { buildSessionView } from "@/lib/session-content";
+import { TranscriptPanel } from "@/components/sessions/TranscriptPanel";
+import { EvidencePanel } from "@/components/sessions/EvidencePanel";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { requireSession } from "@/lib/route-guards";
-import { FileText, Sparkles, ClipboardList, FileCheck, Upload, ShieldAlert, History, Pencil } from "lucide-react";
+import { Sparkles, ClipboardList, FileCheck, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/")({
   head: () => ({ meta: [{ title: "Session — Courtroom Intelligence" }, { name: "description", content: "Session workspace: review the transcript, AI-assisted draft claims, linked evidence, and prepare the human-reviewed report." }] }),
