@@ -7,6 +7,7 @@ import { getSessionById } from "@/lib/sessions.functions";
 import { buildSessionView } from "@/lib/session-content";
 import { TranscriptPanel } from "@/components/sessions/TranscriptPanel";
 import { EvidencePanel } from "@/components/sessions/EvidencePanel";
+import { RecordingPanel } from "@/components/sessions/RecordingPanel";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { requireSession } from "@/lib/route-guards";
