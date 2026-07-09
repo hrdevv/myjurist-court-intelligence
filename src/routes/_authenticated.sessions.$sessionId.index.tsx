@@ -59,6 +59,8 @@ function SessionDetail() {
             </div>
           </Card>
 
+          <RecordingPanel sessionId={session.id} />
+
           <EvidencePanel sessionId={session.id} />
         </div>
       </div>
