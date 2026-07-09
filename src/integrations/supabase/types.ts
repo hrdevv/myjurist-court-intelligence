@@ -189,6 +189,56 @@ export type Database = {
         }
         Relationships: []
       }
+      recordings: {
+        Row: {
+          checksum: string | null
+          created_at: string
+          created_by: string | null
+          duration_seconds: number | null
+          id: string
+          mime: string | null
+          session_id: string
+          size_bytes: number | null
+          status: string
+          storage_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          checksum?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration_seconds?: number | null
+          id?: string
+          mime?: string | null
+          session_id: string
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          checksum?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration_seconds?: number | null
+          id?: string
+          mime?: string | null
+          session_id?: string
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recordings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           case_id: string

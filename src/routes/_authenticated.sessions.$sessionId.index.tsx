@@ -7,6 +7,7 @@ import { getSessionById } from "@/lib/sessions.functions";
 import { buildSessionView } from "@/lib/session-content";
 import { TranscriptPanel } from "@/components/sessions/TranscriptPanel";
 import { EvidencePanel } from "@/components/sessions/EvidencePanel";
+import { RecordingPanel } from "@/components/sessions/RecordingPanel";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { requireSession } from "@/lib/route-guards";
@@ -57,6 +58,8 @@ function SessionDetail() {
               <div className="flex justify-between"><span className="text-muted-foreground">Rejected</span><span>{session.claims.filter((c: AIClaim) => c.review === "rejected").length}</span></div>
             </div>
           </Card>
+
+          <RecordingPanel sessionId={session.id} />
 
           <EvidencePanel sessionId={session.id} />
         </div>

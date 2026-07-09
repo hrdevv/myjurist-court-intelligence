@@ -49,11 +49,11 @@ Two **private** buckets: `recordings` and `evidence`. Access only via signed URL
 - Transcript viewer/editor reads/writes DB; edits create a `transcript_versions` row (version history indicator becomes real).
 
 ## Phase 3 — Recording, transcription, playback, export
-- `recordings` bucket + table.
-- **In-browser recording**: capture mic via Web Audio API, encode complete WAV (16 kHz mono), upload to `recordings` bucket (guards against empty/silent clips). Consent notice shown before capture.
-- **Transcription**: server function posts the recording to Lovable AI `openai/gpt-4o-transcribe` (`/v1/audio/transcriptions`) with timestamps; results become `transcript_segments` (start_ms/end_ms/text/confidence) linked to the session.
-- **Playback player** (reusable component over a signed URL): play/pause, seek bar, **rewind/forward 5s**, current-time/duration, playback speed, and click-a-segment-to-seek (segment start_ms syncs with audio).
-- **Export**: audio download (signed URL); transcript export to `.txt` and `.pdf`; combined "transcript + audio" package.
+- ✅ `recordings` bucket + table (RLS via `can_access_session`, GRANTs, integrity checksum).
+- ✅ **In-browser recording**: capture mic via Web Audio API, encode complete WAV (16 kHz mono), upload to `recordings` bucket (guards against empty/silent clips). Consent notice shown before capture.
+- ✅ **Playback player** (reusable component over a signed URL): play/pause, seek bar, **rewind/forward 5s**, current-time/duration, playback speed. (Segment-click-to-seek pending transcription wiring.)
+- ⏳ **Transcription**: server function posts the recording to Lovable AI `openai/gpt-4o-transcribe` (`/v1/audio/transcriptions`) with timestamps; results become `transcript_segments` (start_ms/end_ms/text/confidence) linked to the session.
+- ⏳ **Export**: audio download (signed URL); transcript export to `.txt` and `.pdf`; combined "transcript + audio" package.
 
 ## Phase 4 — AI claims + review
 - `ai_claims`, `claim_anchors`, `review_decisions` tables + RLS.
