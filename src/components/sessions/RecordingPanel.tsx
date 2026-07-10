@@ -36,10 +36,14 @@ function RecordingItem({
   recording,
   onDelete,
   deleting,
+  onTranscribe,
+  transcribing,
 }: {
   recording: RecordingRow;
   onDelete: (id: string) => void;
   deleting: boolean;
+  onTranscribe: (id: string) => void;
+  transcribing: boolean;
 }) {
   const getUrl = useServerFn(getRecordingSignedUrl);
   const [url, setUrl] = useState<string | null>(null);
