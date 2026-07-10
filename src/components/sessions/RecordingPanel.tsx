@@ -12,10 +12,11 @@ import {
   type RecordingRow,
 } from "@/lib/recordings.functions";
 import { AudioRecorder, sha256Blob } from "@/lib/audio-recorder";
+import { transcribeRecording } from "@/lib/transcript.functions";
 import { AudioPlayer } from "@/components/sessions/AudioPlayer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mic, Square, Trash2, Loader2, ShieldAlert, AudioLines } from "lucide-react";
+import { Mic, Square, Trash2, Loader2, ShieldAlert, AudioLines, FileText } from "lucide-react";
 
 function formatBytes(bytes: number | null): string {
   if (!bytes && bytes !== 0) return "";
@@ -35,10 +36,14 @@ function RecordingItem({
   recording,
   onDelete,
   deleting,
+  onTranscribe,
+  transcribing,
 }: {
   recording: RecordingRow;
   onDelete: (id: string) => void;
   deleting: boolean;
+  onTranscribe: (id: string) => void;
+  transcribing: boolean;
 }) {
   const getUrl = useServerFn(getRecordingSignedUrl);
   const [url, setUrl] = useState<string | null>(null);
@@ -71,6 +76,7 @@ function RecordingItem({
           <div className="text-[11px] text-muted-foreground">
             {formatDuration(recording.duration_seconds)}
             {recording.size_bytes != null ? ` · ${formatBytes(recording.size_bytes)}` : ""}
+            {recording.status ? ` · ${recording.status}` : ""}
           </div>
         </div>
         <Button
@@ -92,6 +98,21 @@ function RecordingItem({
           {loading ? "Loading…" : "Load player"}
         </Button>
       )}
+
+      <Button
+        variant="secondary"
+        size="sm"
+        className="w-full"
+        disabled={transcribing || recording.status === "transcribing"}
+        onClick={() => onTranscribe(recording.id)}
+      >
+        {transcribing ? (
+          <Loader2 className="size-3.5 animate-spin" />
+        ) : (
+          <FileText className="size-3.5" />
+        )}
+        {transcribing ? "Transcribing…" : "Transcribe with AI"}
+      </Button>
     </li>
   );
 }
@@ -101,6 +122,7 @@ export function RecordingPanel({ sessionId }: { sessionId: string }) {
   const list = useServerFn(listRecordings);
   const record = useServerFn(recordRecording);
   const remove = useServerFn(deleteRecording);
+  const transcribe = useServerFn(transcribeRecording);
 
   const recorderRef = useRef<AudioRecorder | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -129,6 +151,21 @@ export function RecordingPanel({ sessionId }: { sessionId: string }) {
       invalidate();
     },
     onError: () => toast.error("Could not remove recording."),
+  });
+
+  const transcribeMutation = useMutation({
+    mutationFn: (recordingId: string) => transcribe({ data: { recordingId } }),
+    onSuccess: (segments) => {
+      toast.success(
+        segments.length > 0
+          ? `Transcribed into ${segments.length} segment${segments.length === 1 ? "" : "s"}`
+          : "Transcription finished (no speech detected)",
+      );
+      invalidate();
+      queryClient.invalidateQueries({ queryKey: ["transcript", sessionId] });
+    },
+    onError: (err) =>
+      toast.error(err instanceof Error ? err.message : "Could not transcribe this recording."),
   });
 
   async function startRecording() {
@@ -238,6 +275,10 @@ export function RecordingPanel({ sessionId }: { sessionId: string }) {
               recording={r}
               deleting={deleteMutation.isPending}
               onDelete={(id) => deleteMutation.mutate(id)}
+              transcribing={
+                transcribeMutation.isPending && transcribeMutation.variables === r.id
+              }
+              onTranscribe={(id) => transcribeMutation.mutate(id)}
             />
           ))}
         </ul>
