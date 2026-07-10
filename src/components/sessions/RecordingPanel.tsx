@@ -153,6 +153,21 @@ export function RecordingPanel({ sessionId }: { sessionId: string }) {
     onError: () => toast.error("Could not remove recording."),
   });
 
+  const transcribeMutation = useMutation({
+    mutationFn: (recordingId: string) => transcribe({ data: { recordingId } }),
+    onSuccess: (segments) => {
+      toast.success(
+        segments.length > 0
+          ? `Transcribed into ${segments.length} segment${segments.length === 1 ? "" : "s"}`
+          : "Transcription finished (no speech detected)",
+      );
+      invalidate();
+      queryClient.invalidateQueries({ queryKey: ["transcript", sessionId] });
+    },
+    onError: (err) =>
+      toast.error(err instanceof Error ? err.message : "Could not transcribe this recording."),
+  });
+
   async function startRecording() {
     try {
       const rec = new AudioRecorder();
