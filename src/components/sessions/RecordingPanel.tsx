@@ -275,6 +275,10 @@ export function RecordingPanel({ sessionId }: { sessionId: string }) {
               recording={r}
               deleting={deleteMutation.isPending}
               onDelete={(id) => deleteMutation.mutate(id)}
+              transcribing={
+                transcribeMutation.isPending && transcribeMutation.variables === r.id
+              }
+              onTranscribe={(id) => transcribeMutation.mutate(id)}
             />
           ))}
         </ul>
