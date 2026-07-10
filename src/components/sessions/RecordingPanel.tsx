@@ -122,6 +122,7 @@ export function RecordingPanel({ sessionId }: { sessionId: string }) {
   const list = useServerFn(listRecordings);
   const record = useServerFn(recordRecording);
   const remove = useServerFn(deleteRecording);
+  const transcribe = useServerFn(transcribeRecording);
 
   const recorderRef = useRef<AudioRecorder | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
