@@ -207,3 +207,173 @@ export const getSegmentVersions = createServerFn({ method: "GET" })
     if (error) throw error;
     return (rows ?? []) as TranscriptVersionRow[];
   });
+
+const RECORDINGS_BUCKET = "recordings";
+
+const EXT_BY_MIME: Record<string, string> = {
+  "audio/wav": "wav",
+  "audio/x-wav": "wav",
+  "audio/mpeg": "mp3",
+  "audio/mp4": "mp4",
+  "audio/webm": "webm",
+};
+
+function msToLabel(ms: number): string {
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
+/** Splits transcript text into sentence-sized segments. */
+function splitIntoSentences(text: string): string[] {
+  const cleaned = text.replace(/\s+/g, " ").trim();
+  if (!cleaned) return [];
+  const matches = cleaned.match(/[^.!?]+[.!?]+|\S[^.!?]*$/g);
+  return (matches ?? [cleaned]).map((s) => s.trim()).filter(Boolean);
+}
+
+/**
+ * Transcribes a stored recording via Lovable AI speech-to-text, then replaces
+ * the session's transcript with the resulting segments and records a version
+ * row for each. Timestamps are distributed across the recording's duration.
+ */
+export const transcribeRecording = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { recordingId: string }) =>
+    z.object({ recordingId: z.string().uuid() }).parse(data),
+  )
+  .handler(async ({ data, context }): Promise<TranscriptSegmentRow[]> => {
+    const { supabase, userId } = context;
+
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) throw new Error("AI transcription is not configured.");
+
+    const { data: recording, error: recErr } = await supabase
+      .from("recordings")
+      .select("id, session_id, storage_path, mime, duration_seconds")
+      .eq("id", data.recordingId)
+      .maybeSingle();
+    if (recErr) throw recErr;
+    if (!recording?.storage_path) {
+      throw new Error("This recording has no stored audio file.");
+    }
+
+    await supabase
+      .from("recordings")
+      .update({ status: "transcribing" })
+      .eq("id", data.recordingId);
+
+    try {
+      const { data: blob, error: dlErr } = await supabase.storage
+        .from(RECORDINGS_BUCKET)
+        .download(recording.storage_path);
+      if (dlErr || !blob) throw dlErr ?? new Error("Could not download the recording.");
+
+      const mime = recording.mime ?? "audio/wav";
+      const ext = EXT_BY_MIME[mime.split(";")[0]] ?? "wav";
+
+      const form = new FormData();
+      form.append("model", "openai/gpt-4o-transcribe");
+      form.append("file", blob, `recording.${ext}`);
+
+      const res = await fetch("https://ai.gateway.lovable.dev/v1/audio/transcriptions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}` },
+        body: form,
+      });
+
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        if (res.status === 429) throw new Error("Transcription rate limit reached. Please retry shortly.");
+        if (res.status === 402) throw new Error("AI credits exhausted. Add credits to continue.");
+        throw new Error(`Transcription failed (${res.status}). ${body}`.trim());
+      }
+
+      const json = (await res.json()) as { text?: string };
+      const fullText = (json.text ?? "").trim();
+      const sentences = splitIntoSentences(fullText);
+
+      // Replace any existing transcript for this session.
+      const { error: delErr } = await supabase
+        .from("transcript_segments")
+        .delete()
+        .eq("session_id", recording.session_id);
+      if (delErr) throw delErr;
+
+      if (sentences.length === 0) {
+        await supabase
+          .from("recordings")
+          .update({ status: "transcribed" })
+          .eq("id", data.recordingId);
+        await supabase.from("audit_logs").insert({
+          actor_id: userId,
+          session_id: recording.session_id,
+          action: "transcript.transcribed",
+          detail: { recording_id: data.recordingId, segments: 0 },
+        });
+        return [];
+      }
+
+      const durationMs =
+        recording.duration_seconds != null ? Math.round(recording.duration_seconds * 1000) : null;
+      const perSegment = durationMs != null ? durationMs / sentences.length : null;
+
+      const rowsToInsert = sentences.map((text, i) => {
+        const startMs = perSegment != null ? Math.round(perSegment * i) : null;
+        const endMs = perSegment != null ? Math.round(perSegment * (i + 1)) : null;
+        return {
+          session_id: recording.session_id,
+          timestamp_label: startMs != null ? msToLabel(startMs) : null,
+          start_ms: startMs,
+          end_ms: endMs,
+          speaker: "Speaker",
+          text,
+          confidence: "high",
+          version: 1,
+          created_by: userId,
+        };
+      });
+
+      const { data: inserted, error: insErr } = await supabase
+        .from("transcript_segments")
+        .insert(rowsToInsert)
+        .select("*");
+      if (insErr) throw insErr;
+
+      const versions = (inserted ?? []).map((r) => ({
+        segment_id: r.id,
+        version: r.version,
+        text: r.text,
+        edited_by: userId,
+      }));
+      if (versions.length > 0) {
+        await supabase.from("transcript_versions").insert(versions);
+      }
+
+      await supabase
+        .from("recordings")
+        .update({ status: "transcribed" })
+        .eq("id", data.recordingId);
+
+      await supabase.from("audit_logs").insert({
+        actor_id: userId,
+        session_id: recording.session_id,
+        action: "transcript.transcribed",
+        detail: { recording_id: data.recordingId, segments: rowsToInsert.length },
+      });
+
+      const sorted = ([...(inserted ?? [])] as TranscriptSegmentRow[]).sort(
+        (a, b) => (a.start_ms ?? 0) - (b.start_ms ?? 0),
+      );
+      return sorted;
+    } catch (err) {
+      await supabase
+        .from("recordings")
+        .update({ status: "failed" })
+        .eq("id", data.recordingId);
+      throw err;
+    }
+  });
