@@ -76,6 +76,7 @@ function RecordingItem({
           <div className="text-[11px] text-muted-foreground">
             {formatDuration(recording.duration_seconds)}
             {recording.size_bytes != null ? ` · ${formatBytes(recording.size_bytes)}` : ""}
+            {recording.status ? ` · ${recording.status}` : ""}
           </div>
         </div>
         <Button
@@ -97,6 +98,21 @@ function RecordingItem({
           {loading ? "Loading…" : "Load player"}
         </Button>
       )}
+
+      <Button
+        variant="secondary"
+        size="sm"
+        className="w-full"
+        disabled={transcribing || recording.status === "transcribing"}
+        onClick={() => onTranscribe(recording.id)}
+      >
+        {transcribing ? (
+          <Loader2 className="size-3.5 animate-spin" />
+        ) : (
+          <FileText className="size-3.5" />
+        )}
+        {transcribing ? "Transcribing…" : "Transcribe with AI"}
+      </Button>
     </li>
   );
 }
