@@ -12,10 +12,11 @@ import {
   type RecordingRow,
 } from "@/lib/recordings.functions";
 import { AudioRecorder, sha256Blob } from "@/lib/audio-recorder";
+import { transcribeRecording } from "@/lib/transcript.functions";
 import { AudioPlayer } from "@/components/sessions/AudioPlayer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mic, Square, Trash2, Loader2, ShieldAlert, AudioLines } from "lucide-react";
+import { Mic, Square, Trash2, Loader2, ShieldAlert, AudioLines, FileText } from "lucide-react";
 
 function formatBytes(bytes: number | null): string {
   if (!bytes && bytes !== 0) return "";
