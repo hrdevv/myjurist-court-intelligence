@@ -1,11 +1,12 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { type AIClaim, type TranscriptSegment } from "@/lib/mock-data";
+import { type AIClaim, type ReviewStatus, type TranscriptSegment } from "@/lib/mock-data";
 import { getSessionById } from "@/lib/sessions.functions";
+import { listClaimsBySession, updateClaimReview } from "@/lib/claims.functions";
 import { buildSessionView } from "@/lib/session-content";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList, resolveAnchorSegments } from "@/lib/claim-rendering";
@@ -18,7 +19,8 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/review
     await guardRouteAccess("reviewQueue");
     const row = await getSessionById({ data: { id: params.sessionId } });
     if (!row) throw notFound();
-    return { session: buildSessionView(row) };
+    const claims = await listClaimsBySession({ data: { sessionId: params.sessionId } });
+    return { session: { ...buildSessionView(row), claims } };
   },
   notFoundComponent: () => <AppLayout><PageHeader title="Session not found" /></AppLayout>,
   errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
@@ -37,6 +39,7 @@ const filters: { key: string; label: string; match: (c: AIClaim) => boolean }[] 
 
 function ReviewDetail() {
   const { session } = Route.useLoaderData();
+  const router = useRouter();
   const [filter, setFilter] = useState("pending");
   const [selectedId, setSelectedId] = useState(session.claims.find((c: AIClaim) => c.review === "pending")?.id ?? session.claims[0]?.id ?? "");
   const [note, setNote] = useState("");
@@ -44,6 +47,11 @@ function ReviewDetail() {
   const filtered = useMemo(() => session.claims.filter(filters.find(f => f.key === filter)!.match), [session.claims, filter]);
   const selected = session.claims.find((c: AIClaim) => c.id === selectedId) ?? filtered[0] ?? session.claims[0];
   const sourceSegments = resolveAnchorSegments(selected?.anchors ?? []);
+  const saveReview = async (review: ReviewStatus) => {
+    if (!selected) return;
+    await updateClaimReview({ data: { claimId: selected.id, review, reviewerNote: note } });
+    await router.invalidate();
+  };
 
   if (session.claims.length === 0 || !selected) {
     return (
@@ -142,11 +150,11 @@ function ReviewDetail() {
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <Button className="w-full" disabled={selected.anchors.length === 0}><Check className="size-4" /> Approve for Report</Button>
-              <Button variant="outline" className="w-full"><Pencil className="size-4" /> Edit and Approve</Button>
-              <Button variant="outline" className="w-full"><HelpCircle className="size-4" /> Mark Uncertain</Button>
-              <Button variant="outline" className="w-full"><FileQuestion className="size-4" /> Needs More Evidence</Button>
-              <Button variant="destructive" className="col-span-2 w-full"><X className="size-4" /> Reject</Button>
+              <Button className="w-full" disabled={selected.anchors.length === 0} onClick={() => saveReview("approved")}><Check className="size-4" /> Approve for Report</Button>
+              <Button variant="outline" className="w-full" onClick={() => saveReview("approved")}><Pencil className="size-4" /> Edit and Approve</Button>
+              <Button variant="outline" className="w-full" onClick={() => saveReview("uncertain")}><HelpCircle className="size-4" /> Mark Uncertain</Button>
+              <Button variant="outline" className="w-full" onClick={() => saveReview("needs_more_evidence")}><FileQuestion className="size-4" /> Needs More Evidence</Button>
+              <Button variant="destructive" className="col-span-2 w-full" onClick={() => saveReview("rejected")}><X className="size-4" /> Reject</Button>
             </div>
             {selected.anchors.length === 0 && (
               <p className="text-[11px] text-muted-foreground italic mt-3">Approval disabled: no evidence anchor. Confirm manually to override.</p>

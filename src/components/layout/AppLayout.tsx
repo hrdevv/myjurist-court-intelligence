@@ -1,6 +1,7 @@
 import { ReactNode, useState } from "react";
 import { Sidebar, SidebarContent } from "./Sidebar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DEMO_LEGAL_OUTPUTS_ENABLED } from "@/lib/demo-mode";
 import { AlertTriangle, Menu, Scale } from "lucide-react";
 
 export function AppLayout({ children }: { children: ReactNode }) {
@@ -33,7 +34,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
         <div className="bg-warning/15 border-b border-warning/30 px-4 md:px-6 py-2 text-xs flex items-start gap-2 text-warning-foreground">
           <AlertTriangle className="size-3.5 mt-0.5 shrink-0" />
-          <span><strong>Demo AI Mode</strong> · This is a prototype. No real backend, no real evidence storage, no production AI is connected.</span>
+          <span>
+            <strong>{DEMO_LEGAL_OUTPUTS_ENABLED ? "Demo legal outputs enabled" : "Demo legal outputs disabled"}</strong>
+            {" "}· Mock-only surfaces, including demo team data and demo draft generation, are opt-in via
+            {" "}<span className="font-mono">VITE_DEMO_LEGAL_OUTPUTS=enabled</span>.
+            Production environments must keep this disabled until persisted review/report APIs are live.
+          </span>
         </div>
         <main className="flex-1 px-4 sm:px-6 md:px-10 py-6 md:py-8 max-w-[1400px] w-full mx-auto">{children}</main>
       </div>
