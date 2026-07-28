@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { type AIClaim } from "@/lib/mock-data";
 import { getSessionById } from "@/lib/sessions.functions";
+import { listClaimsBySession } from "@/lib/claims.functions";
 import { buildSessionView } from "@/lib/session-content";
 import { TranscriptPanel } from "@/components/sessions/TranscriptPanel";
 import { EvidencePanel } from "@/components/sessions/EvidencePanel";
@@ -20,7 +21,8 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/")({
     await requireSession();
     const row = await getSessionById({ data: { id: params.sessionId } });
     if (!row) throw notFound();
-    return { session: buildSessionView(row) };
+    const claims = await listClaimsBySession({ data: { sessionId: params.sessionId } });
+    return { session: { ...buildSessionView(row), claims } };
   },
   notFoundComponent: () => <AppLayout><PageHeader title="Session not found" /></AppLayout>,
   errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
@@ -73,14 +75,13 @@ function SessionDetail() {
           <h2 className="font-serif text-2xl">AI-assisted draft claims</h2>
           <AIDraftBadge />
         </div>
-        {!DEMO_LEGAL_OUTPUTS_ENABLED && (
-          <Card className="p-5 border-warning/40 bg-warning/10 text-sm text-warning-foreground">
-            Demo AI claims are disabled. Set <span className="font-mono">VITE_DEMO_LEGAL_OUTPUTS=enabled</span>
-            {" "}only in demo environments to show mock-backed legal outputs.
+        {session.claims.length === 0 && (
+          <Card className="p-5 text-sm text-muted-foreground">
+            No persisted draft claims are available for this session yet.
           </Card>
         )}
         <div className="grid md:grid-cols-2 gap-4">
-          {DEMO_LEGAL_OUTPUTS_ENABLED && session.claims.map((claim: AIClaim) => (
+          {session.claims.map((claim: AIClaim) => (
             <Card key={claim.id} className="p-5 flex flex-col gap-3">
               <div className="flex flex-wrap gap-2">
                 <ClaimTypeBadge type={claim.type} />
@@ -104,4 +105,3 @@ function SessionDetail() {
     </AppLayout>
   );
 }
-

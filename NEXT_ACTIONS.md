@@ -2,35 +2,35 @@
 
 ## Immediate next action
 
-**Do this first:** hard-gate all mock/demo-backed legal outputs behind an explicit demo-mode boundary before any production deployment or broader feature work.
+**Status:** The immediate demo-mode boundary has been added. **Do this next:** complete persisted claims/review/report rollout by validating the new schema/API path with tests and replacing any remaining mock-only surfaces before production deployment.
 
-Problem: The audit found that the app already has real Supabase-backed persistence for several domains, but review/report/team legal-output surfaces still consume mock/demo data. That mix creates the highest immediate risk because a user could interpret demo AI claims, team data, or report content as live case material.
+Problem: The app now has a persisted claims/review/report path, but that new path still needs RLS-focused validation and there are remaining mock-only surfaces such as demo team data and dashboard activity.
 
-Evidence: `src/routes/_authenticated.review.tsx`, `src/routes/_authenticated.sessions.$sessionId.report.tsx`, and `src/routes/_authenticated.team.tsx` import `src/lib/mock-data.ts`; `PROJECT_OVERVIEW.md` states that no production AI is connected and that backend wiring remains before deployment.
+Evidence: `src/lib/claims.functions.ts` and the claims migration add the persisted claim/review path; `src/routes/_authenticated.team.tsx` and `src/routes/_authenticated.index.tsx` still import `src/lib/mock-data.ts`; `PROJECT_OVERVIEW.md` states that broader backend wiring remains before deployment.
 
-Impact: Prevents accidental production exposure or reliance on non-persisted demo legal intelligence while preserving the prototype for demos and follow-on engineering.
+Impact: Reduces reliance on non-persisted legal intelligence while focusing follow-on engineering on authorization validation and remaining mock replacement.
 
 Effort: Low/Medium for an explicit gate and environment documentation; High for full replacement with persisted claims/review/report APIs.
 
 Priority: Critical.
 
-Suggested Action: Add an environment-controlled demo-mode gate, visible runtime banner, and deployment checklist that blocks production configuration when mock-backed routes are enabled; then implement persisted claims/review/report APIs as the next engineering milestone.
+Suggested Action: Validate the persisted `ai_claims` / `claim_anchors` schema and claim review APIs under Supabase RLS, then remove or replace the remaining mock-only surfaces such as demo team data and dashboard activity.
 
 ## Critical
 
 ### Replace or hard-gate mock/demo review and report flows
 
-Problem: Production-facing review/report/team surfaces still depend on mock data while other domains already use Supabase.
+Problem: Claims/review/report now have persisted schema and server functions, but the new path needs tests and remaining mock-only surfaces still need replacement.
 
-Evidence: `src/routes/_authenticated.review.tsx`, `src/routes/_authenticated.sessions.$sessionId.report.tsx`, and `src/routes/_authenticated.team.tsx` import `src/lib/mock-data.ts`; `PROJECT_OVERVIEW.md` says production backend and live AI remain out of scope for the prototype.
+Evidence: `src/lib/claims.functions.ts` reads and updates `ai_claims`; the claims migration defines `ai_claims` and `claim_anchors`; `src/routes/_authenticated.team.tsx` and dashboard activity still use `mock-data`.
 
-Impact: Users could mistake demo AI claims, team data, or report content for persisted legal records.
+Impact: Unvalidated RLS or remaining mock-only surfaces could still create production-readiness gaps.
 
 Effort: High.
 
 Priority: Critical.
 
-Suggested Action: Add explicit environment-controlled demo mode and implement persisted claims/review/report APIs before enabling production usage.
+Suggested Action: Finish validating persisted claims/review/report APIs, add coverage for their authorization rules, and keep demo-only surfaces gated until their persisted replacements are complete.
 
 ## High
 

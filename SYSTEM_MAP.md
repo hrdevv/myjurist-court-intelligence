@@ -273,6 +273,9 @@ TanStack Start server functions are the internal API surface; generated HTTP RPC
 | Transcripts | `updateSegment` | POST | `transcript_segments`, `transcript_versions`, `audit_logs` | Transcript module |
 | Transcripts | `getSegmentVersions` | GET | `transcript_versions` | Transcript module |
 | Transcripts/AI | `transcribeRecording` | POST | `recordings`, storage bucket `recordings`, Lovable AI API, `transcript_segments`, `transcript_versions`, `audit_logs` | Transcript module |
+| Claims | `listClaimsBySession` | GET | `ai_claims`, `claim_anchors`, `transcript_segments` | Claims module |
+| Claims | `listReviewClaims` | GET | `ai_claims`, `claim_anchors`, `transcript_segments`, `sessions` | Claims module |
+| Claims | `updateClaimReview` | POST | `ai_claims`, `audit_logs` | Claims module |
 
 ### External APIs
 
@@ -288,10 +291,10 @@ Finding:
 Some UI surfaces still use mock/demo data instead of persisted backend tables.
 
 Evidence:
-Review queue, report, team, and claim rendering import `src/lib/mock-data.ts`; project overview and handoff route explicitly identify demo/mock AI and backend wiring needs.
+Team and dashboard activity still import `src/lib/mock-data.ts`; project overview and handoff route identify broader production backend wiring needs. Claims/review/report flows now have persisted `ai_claims` and `claim_anchors` APIs.
 
 Files:
-`src/routes/_authenticated.review.tsx`, `src/routes/_authenticated.sessions.$sessionId.report.tsx`, `src/routes/_authenticated.team.tsx`, `src/lib/mock-data.ts`, `PROJECT_OVERVIEW.md`
+`src/routes/_authenticated.team.tsx`, `src/routes/_authenticated.index.tsx`, `src/lib/claims.functions.ts`, `src/lib/mock-data.ts`, `PROJECT_OVERVIEW.md`
 
 Confidence:
 High

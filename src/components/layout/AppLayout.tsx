@@ -36,7 +36,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           <AlertTriangle className="size-3.5 mt-0.5 shrink-0" />
           <span>
             <strong>{DEMO_LEGAL_OUTPUTS_ENABLED ? "Demo legal outputs enabled" : "Demo legal outputs disabled"}</strong>
-            {" "}· Mock AI claims, report previews, and demo team data are opt-in via
+            {" "}· Mock-only surfaces, including demo team data and demo draft generation, are opt-in via
             {" "}<span className="font-mono">VITE_DEMO_LEGAL_OUTPUTS=enabled</span>.
             Production environments must keep this disabled until persisted review/report APIs are live.
           </span>

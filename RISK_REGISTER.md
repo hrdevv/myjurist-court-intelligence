@@ -2,7 +2,7 @@
 
 | Category | Risk | Probability | Impact | Evidence | Recommended mitigation |
 | --- | --- | --- | --- | --- | --- |
-| Technical | Mock/demo data remains in production-facing flows | High | High | Review, report, team, and claim-rendering files import `mock-data`; overview states no production AI is connected and backend wiring remains | Gate demo mode explicitly and replace mock-backed surfaces with persisted server functions before production |
+| Technical | Mock/demo data remains in some production-facing surfaces | Medium | High | Team and dashboard activity still import `mock-data`; persisted claim/review/report functions now exist but need test coverage and production validation | Keep demo-only surfaces gated and complete persisted replacements before production |
 | Technical | Server functions combine validation, data access, audit logging, and external API calls without separate service/test seams | Medium | Medium | Domain logic lives directly in `src/lib/*.functions.ts`; no tests for those modules were found | Extract pure service helpers where useful and add server-function tests with Supabase mocks/local harness |
 | Technical | Storage access depends on path convention | Medium | High | Storage RLS policies cast the first storage folder segment to UUID for `can_access_session` | Centralize storage path construction and add policy tests for valid/invalid paths |
 | Technical | No job/queue layer for long-running transcription | Medium | Medium/High | `transcribeRecording` calls external speech-to-text synchronously from a server function and then mutates transcript tables | Move long-running AI transcription to background workflow or add timeout/retry/status handling |
@@ -17,13 +17,13 @@
 ## Detailed findings
 
 Finding:
-The largest current production-readiness risk is mixed real persistence with mock/demo product flows.
+The largest current production-readiness risk is validating the newly persisted claims/review/report path and eliminating remaining mock-only surfaces.
 
 Evidence:
-Supabase-backed server functions exist for cases, sessions, evidence, recordings, and transcripts, while review/report/team claim flows still import `mock-data`; `PROJECT_OVERVIEW.md` describes the app as a frontend prototype and lists backend work remaining before deployment.
+Supabase-backed server functions now exist for cases, sessions, evidence, recordings, transcripts, and claims/review decisions, while team and dashboard activity still import `mock-data`; `PROJECT_OVERVIEW.md` describes backend work remaining before deployment.
 
 Files:
-`src/lib/*.functions.ts`, `src/routes/_authenticated.review.tsx`, `src/routes/_authenticated.sessions.$sessionId.report.tsx`, `src/routes/_authenticated.team.tsx`, `PROJECT_OVERVIEW.md`
+`src/lib/*.functions.ts`, `src/lib/claims.functions.ts`, `src/routes/_authenticated.team.tsx`, `src/routes/_authenticated.index.tsx`, `PROJECT_OVERVIEW.md`
 
 Confidence:
 High

@@ -11,7 +11,7 @@ if (
   console.error(
     [
       "Production configuration is unsafe:",
-      "VITE_DEMO_LEGAL_OUTPUTS=enabled exposes mock/demo legal outputs.",
+      "VITE_DEMO_LEGAL_OUTPUTS=enabled exposes remaining mock-only surfaces.",
       "Disable it before deploying production, or set VITE_ALLOW_DEMO_LEGAL_OUTPUTS_IN_BUILD=yes only for isolated demo builds.",
     ].join("\n"),
   );

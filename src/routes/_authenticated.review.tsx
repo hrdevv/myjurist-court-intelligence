@@ -1,43 +1,31 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
-import { sessions, type AIClaim, type Session } from "@/lib/mock-data";
+import { type AIClaim } from "@/lib/mock-data";
 import { ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { guardRouteAccess } from "@/lib/route-guards";
-import { DemoOutputsDisabled } from "@/components/legal/DemoOutputsDisabled";
-import { requireDemoLegalOutputs } from "@/lib/demo-mode";
+import { listReviewClaims } from "@/lib/claims.functions";
 
 export const Route = createFileRoute("/_authenticated/review")({
   head: () => ({ meta: [{ title: "Review Queue — Courtroom Intelligence" }, { name: "description", content: "Work through all AI-assisted draft claims awaiting human review, approve evidence-linked statements, and flag unsupported inferences." }] }),
   loader: async () => {
     await guardRouteAccess("reviewQueue");
-    return { demoLegalOutputsEnabled: requireDemoLegalOutputs() };
+    const claims = await listReviewClaims();
+    return { claims };
   },
   errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
   component: ReviewQueue,
 });
 
 function ReviewQueue() {
-  const { demoLegalOutputsEnabled } = Route.useLoaderData();
+  const { claims } = Route.useLoaderData();
 
-  if (!demoLegalOutputsEnabled) {
-    return (
-      <AppLayout>
-        <DemoOutputsDisabled surface="Review queue" />
-      </AppLayout>
-    );
-  }
-
-  type QueueClaim = AIClaim & { sessionId: string; sessionTitle: string };
-  const all: QueueClaim[] = sessions.flatMap((s: Session) =>
-    s.claims.map((c: AIClaim) => ({ ...c, sessionId: s.id, sessionTitle: s.title })),
-  );
   return (
     <AppLayout>
       <PageHeader eyebrow="Workspace" title="Review queue" description="Every AI-assisted draft claim across sessions. Approve only what is anchored to verifiable evidence." />
       <div className="space-y-3">
-        {all.map((c: QueueClaim) => (
+        {claims.map((c: AIClaim & { sessionId: string; sessionTitle: string }) => (
           <Card key={c.id} className="p-4 flex flex-wrap items-start gap-4 hover:bg-accent/20 transition-colors">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap gap-2 mb-2">

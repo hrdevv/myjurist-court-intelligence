@@ -4,12 +4,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getSegment, LEGAL_DISCLAIMER, type AIClaim, type ClaimAnchor } from "@/lib/mock-data";
 import { getSessionById } from "@/lib/sessions.functions";
+import { listClaimsBySession } from "@/lib/claims.functions";
 import { buildSessionView } from "@/lib/session-content";
 import { ConfidenceBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { requireSession } from "@/lib/route-guards";
-import { DemoOutputsDisabled } from "@/components/legal/DemoOutputsDisabled";
-import { requireDemoLegalOutputs } from "@/lib/demo-mode";
 import { AlertTriangle, Download, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/report")({
@@ -18,7 +17,8 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/report
     await requireSession();
     const row = await getSessionById({ data: { id: params.sessionId } });
     if (!row) throw notFound();
-    return { session: buildSessionView(row), demoLegalOutputsEnabled: requireDemoLegalOutputs() };
+    const claims = await listClaimsBySession({ data: { sessionId: params.sessionId } });
+    return { session: { ...buildSessionView(row), claims } };
   },
   notFoundComponent: () => <AppLayout><PageHeader title="Session not found" /></AppLayout>,
   errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
@@ -26,15 +26,7 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/report
 });
 
 function ReportPreview() {
-  const { session, demoLegalOutputsEnabled } = Route.useLoaderData();
-
-  if (!demoLegalOutputsEnabled) {
-    return (
-      <AppLayout>
-        <DemoOutputsDisabled surface="Report preview" />
-      </AppLayout>
-    );
-  }
+  const { session } = Route.useLoaderData();
 
   const approved = session.claims.filter((c: AIClaim) => c.review === "approved");
   const inconsistencies = session.claims.filter((c: AIClaim) => c.type === "inconsistency_candidate");
@@ -82,7 +74,7 @@ function ReportPreview() {
         <Section title="2. Evidence references">
           <ul className="text-sm space-y-2">
             {approved.flatMap((c: AIClaim) => c.anchors).map((a: ClaimAnchor, i: number) => {
-              const seg = getSegment(a.segmentId);
+              const seg = a.transcript ?? getSegment(a.segmentId);
               if (!seg) return null;
               return <li key={i} className="font-mono text-xs">[{seg.timestamp}] {seg.speaker}: "{seg.text}"</li>;
             })}

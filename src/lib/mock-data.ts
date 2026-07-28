@@ -42,6 +42,7 @@ export interface EvidenceFile {
 export interface ClaimAnchor {
   segmentId: string;
   status: AnchorStatus;
+  transcript?: TranscriptSegment;
 }
 
 export interface AIClaim {

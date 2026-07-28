@@ -9,7 +9,7 @@ import { AnchorBadge } from "@/components/legal/Badges";
  */
 export function resolveAnchorSegments(anchors: readonly ClaimAnchor[]): TranscriptSegment[] {
   return anchors
-    .map((anchor: ClaimAnchor) => getSegment(anchor.segmentId))
+    .map((anchor: ClaimAnchor) => anchor.transcript ?? getSegment(anchor.segmentId))
     .filter((segment): segment is TranscriptSegment => Boolean(segment));
 }
 
