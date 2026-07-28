@@ -8,6 +8,8 @@ import { buildSessionView } from "@/lib/session-content";
 import { ConfidenceBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { requireSession } from "@/lib/route-guards";
+import { DemoOutputsDisabled } from "@/components/legal/DemoOutputsDisabled";
+import { requireDemoLegalOutputs } from "@/lib/demo-mode";
 import { AlertTriangle, Download, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/report")({
@@ -16,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/report
     await requireSession();
     const row = await getSessionById({ data: { id: params.sessionId } });
     if (!row) throw notFound();
-    return { session: buildSessionView(row) };
+    return { session: buildSessionView(row), demoLegalOutputsEnabled: requireDemoLegalOutputs() };
   },
   notFoundComponent: () => <AppLayout><PageHeader title="Session not found" /></AppLayout>,
   errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
@@ -24,7 +26,16 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/report
 });
 
 function ReportPreview() {
-  const { session } = Route.useLoaderData();
+  const { session, demoLegalOutputsEnabled } = Route.useLoaderData();
+
+  if (!demoLegalOutputsEnabled) {
+    return (
+      <AppLayout>
+        <DemoOutputsDisabled surface="Report preview" />
+      </AppLayout>
+    );
+  }
+
   const approved = session.claims.filter((c: AIClaim) => c.review === "approved");
   const inconsistencies = session.claims.filter((c: AIClaim) => c.type === "inconsistency_candidate");
   const followUps = session.claims.filter((c: AIClaim) => c.review === "needs_more_evidence");

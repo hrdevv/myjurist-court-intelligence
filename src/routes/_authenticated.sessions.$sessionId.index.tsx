@@ -11,6 +11,7 @@ import { RecordingPanel } from "@/components/sessions/RecordingPanel";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { requireSession } from "@/lib/route-guards";
+import { DEMO_LEGAL_OUTPUTS_ENABLED } from "@/lib/demo-mode";
 import { Sparkles, ClipboardList, FileCheck, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/")({
@@ -36,7 +37,7 @@ function SessionDetail() {
         title={session.title}
         description="Review transcript, evidence and AI-assisted draft claims. Approved claims enter the report; unsupported claims are excluded by default."
         actions={<>
-          <Button variant="outline"><Sparkles className="size-4" /> Generate Review Draft</Button>
+          <Button variant="outline" disabled={!DEMO_LEGAL_OUTPUTS_ENABLED}><Sparkles className="size-4" /> Generate Review Draft</Button>
           <Button variant="outline" asChild><Link to="/sessions/$sessionId/review" params={{ sessionId: session.id }}><ClipboardList className="size-4" /> Open Review Console</Link></Button>
           <Button asChild><Link to="/sessions/$sessionId/report" params={{ sessionId: session.id }}><FileCheck className="size-4" /> Preview Report</Link></Button>
         </>}
@@ -72,8 +73,14 @@ function SessionDetail() {
           <h2 className="font-serif text-2xl">AI-assisted draft claims</h2>
           <AIDraftBadge />
         </div>
+        {!DEMO_LEGAL_OUTPUTS_ENABLED && (
+          <Card className="p-5 border-warning/40 bg-warning/10 text-sm text-warning-foreground">
+            Demo AI claims are disabled. Set <span className="font-mono">VITE_DEMO_LEGAL_OUTPUTS=enabled</span>
+            {" "}only in demo environments to show mock-backed legal outputs.
+          </Card>
+        )}
         <div className="grid md:grid-cols-2 gap-4">
-          {session.claims.map((claim: AIClaim) => (
+          {DEMO_LEGAL_OUTPUTS_ENABLED && session.claims.map((claim: AIClaim) => (
             <Card key={claim.id} className="p-5 flex flex-col gap-3">
               <div className="flex flex-wrap gap-2">
                 <ClaimTypeBadge type={claim.type} />
@@ -97,5 +104,4 @@ function SessionDetail() {
     </AppLayout>
   );
 }
-
 

@@ -10,6 +10,8 @@ import { buildSessionView } from "@/lib/session-content";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList, resolveAnchorSegments } from "@/lib/claim-rendering";
 import { guardRouteAccess } from "@/lib/route-guards";
+import { DemoOutputsDisabled } from "@/components/legal/DemoOutputsDisabled";
+import { requireDemoLegalOutputs } from "@/lib/demo-mode";
 import { Check, X, Pencil, HelpCircle, FileQuestion } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/review")({
@@ -18,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/review
     await guardRouteAccess("reviewQueue");
     const row = await getSessionById({ data: { id: params.sessionId } });
     if (!row) throw notFound();
-    return { session: buildSessionView(row) };
+    return { session: buildSessionView(row), demoLegalOutputsEnabled: requireDemoLegalOutputs() };
   },
   notFoundComponent: () => <AppLayout><PageHeader title="Session not found" /></AppLayout>,
   errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
@@ -36,7 +38,7 @@ const filters: { key: string; label: string; match: (c: AIClaim) => boolean }[] 
 ];
 
 function ReviewDetail() {
-  const { session } = Route.useLoaderData();
+  const { session, demoLegalOutputsEnabled } = Route.useLoaderData();
   const [filter, setFilter] = useState("pending");
   const [selectedId, setSelectedId] = useState(session.claims.find((c: AIClaim) => c.review === "pending")?.id ?? session.claims[0]?.id ?? "");
   const [note, setNote] = useState("");
@@ -44,6 +46,14 @@ function ReviewDetail() {
   const filtered = useMemo(() => session.claims.filter(filters.find(f => f.key === filter)!.match), [session.claims, filter]);
   const selected = session.claims.find((c: AIClaim) => c.id === selectedId) ?? filtered[0] ?? session.claims[0];
   const sourceSegments = resolveAnchorSegments(selected?.anchors ?? []);
+
+  if (!demoLegalOutputsEnabled) {
+    return (
+      <AppLayout>
+        <DemoOutputsDisabled surface="Review console" />
+      </AppLayout>
+    );
+  }
 
   if (session.claims.length === 0 || !selected) {
     return (
@@ -157,3 +167,10 @@ function ReviewDetail() {
     </AppLayout>
   );
 }
+  if (!demoLegalOutputsEnabled) {
+    return (
+      <AppLayout>
+        <DemoOutputsDisabled surface="Review console" />
+      </AppLayout>
+    );
+  }

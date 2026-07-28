@@ -5,17 +5,30 @@ import { sessions, type AIClaim, type Session } from "@/lib/mock-data";
 import { ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { guardRouteAccess } from "@/lib/route-guards";
+import { DemoOutputsDisabled } from "@/components/legal/DemoOutputsDisabled";
+import { requireDemoLegalOutputs } from "@/lib/demo-mode";
 
 export const Route = createFileRoute("/_authenticated/review")({
   head: () => ({ meta: [{ title: "Review Queue — Courtroom Intelligence" }, { name: "description", content: "Work through all AI-assisted draft claims awaiting human review, approve evidence-linked statements, and flag unsupported inferences." }] }),
   loader: async () => {
     await guardRouteAccess("reviewQueue");
+    return { demoLegalOutputsEnabled: requireDemoLegalOutputs() };
   },
   errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
   component: ReviewQueue,
 });
 
 function ReviewQueue() {
+  const { demoLegalOutputsEnabled } = Route.useLoaderData();
+
+  if (!demoLegalOutputsEnabled) {
+    return (
+      <AppLayout>
+        <DemoOutputsDisabled surface="Review queue" />
+      </AppLayout>
+    );
+  }
+
   type QueueClaim = AIClaim & { sessionId: string; sessionTitle: string };
   const all: QueueClaim[] = sessions.flatMap((s: Session) =>
     s.claims.map((c: AIClaim) => ({ ...c, sessionId: s.id, sessionTitle: s.title })),
