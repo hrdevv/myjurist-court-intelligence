@@ -178,7 +178,7 @@ const MP3_KBPS = 64;
  * Transcodes a PCM16 WAV to MP3 in the browser. CPU-bound, so it encodes in
  * chunks and yields to the event loop between them to keep the UI responsive.
  */
-export async function wavToMp3(buffer: ArrayBuffer): Promise<Uint8Array> {
+export async function wavToMp3(buffer: ArrayBuffer): Promise<ArrayBuffer> {
   const { Mp3Encoder } = await import("@breezystack/lamejs");
   const { sampleRate, channels, samples } = decodeWav(buffer);
   const encoder = new Mp3Encoder(channels === 2 ? 2 : 1, sampleRate, MP3_KBPS);
@@ -208,10 +208,11 @@ export async function wavToMp3(buffer: ArrayBuffer): Promise<Uint8Array> {
   if (tail.length > 0) parts.push(new Uint8Array(tail));
 
   const total = parts.reduce((sum, p) => sum + p.length, 0);
-  const out = new Uint8Array(total);
+  const out = new ArrayBuffer(total);
+  const bytes = new Uint8Array(out);
   let at = 0;
   for (const p of parts) {
-    out.set(p, at);
+    bytes.set(p, at);
     at += p.length;
   }
   return out;
