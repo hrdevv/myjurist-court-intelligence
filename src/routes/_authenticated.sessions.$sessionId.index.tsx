@@ -8,6 +8,7 @@ import { buildSessionView } from "@/lib/session-content";
 import { TranscriptPanel } from "@/components/sessions/TranscriptPanel";
 import { EvidencePanel } from "@/components/sessions/EvidencePanel";
 import { RecordingPanel } from "@/components/sessions/RecordingPanel";
+import { ExportBundleDialog } from "@/components/sessions/ExportBundleDialog";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { requireSession } from "@/lib/route-guards";
