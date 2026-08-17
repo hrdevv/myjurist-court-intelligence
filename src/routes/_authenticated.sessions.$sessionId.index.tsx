@@ -8,6 +8,7 @@ import { buildSessionView } from "@/lib/session-content";
 import { TranscriptPanel } from "@/components/sessions/TranscriptPanel";
 import { EvidencePanel } from "@/components/sessions/EvidencePanel";
 import { RecordingPanel } from "@/components/sessions/RecordingPanel";
+import { ExportBundleDialog } from "@/components/sessions/ExportBundleDialog";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { requireSession } from "@/lib/route-guards";
@@ -38,6 +39,7 @@ function SessionDetail() {
         actions={<>
           <Button variant="outline"><Sparkles className="size-4" /> Generate Review Draft</Button>
           <Button variant="outline" asChild><Link to="/sessions/$sessionId/review" params={{ sessionId: session.id }}><ClipboardList className="size-4" /> Open Review Console</Link></Button>
+          <ExportBundleDialog sessionId={session.id} />
           <Button asChild><Link to="/sessions/$sessionId/report" params={{ sessionId: session.id }}><FileCheck className="size-4" /> Preview Report</Link></Button>
         </>}
       />
