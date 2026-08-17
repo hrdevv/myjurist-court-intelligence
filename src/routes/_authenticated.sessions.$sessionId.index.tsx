@@ -38,6 +38,7 @@ function SessionDetail() {
         actions={<>
           <Button variant="outline"><Sparkles className="size-4" /> Generate Review Draft</Button>
           <Button variant="outline" asChild><Link to="/sessions/$sessionId/review" params={{ sessionId: session.id }}><ClipboardList className="size-4" /> Open Review Console</Link></Button>
+          <ExportBundleDialog sessionId={session.id} />
           <Button asChild><Link to="/sessions/$sessionId/report" params={{ sessionId: session.id }}><FileCheck className="size-4" /> Preview Report</Link></Button>
         </>}
       />
