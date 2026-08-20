@@ -38,7 +38,7 @@ describe("verifyQuote", () => {
     expect(verdict.segmentId).toBe("s2");
   });
 
-  it("marks a近-miss paraphrase as suggested, not verified", () => {
+  it("marks a near-miss paraphrase as suggested, not verified", () => {
     const verdict = verifyQuote("the gate was locked when we got there so we waited", segments);
     expect(verdict.status).toBe("suggested");
     expect(verdict.segmentId).toBe("s2");
