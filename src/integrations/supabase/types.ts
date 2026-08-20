@@ -112,6 +112,116 @@ export type Database = {
         }
         Relationships: []
       }
+      claim_anchors: {
+        Row: {
+          claim_id: string
+          created_at: string
+          id: string
+          match_score: number | null
+          quote: string | null
+          segment_id: string | null
+          status: string
+          verified_at: string | null
+        }
+        Insert: {
+          claim_id: string
+          created_at?: string
+          id?: string
+          match_score?: number | null
+          quote?: string | null
+          segment_id?: string | null
+          status?: string
+          verified_at?: string | null
+        }
+        Update: {
+          claim_id?: string
+          created_at?: string
+          id?: string
+          match_score?: number | null
+          quote?: string | null
+          segment_id?: string | null
+          status?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_anchors_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_anchors_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "transcript_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      claims: {
+        Row: {
+          confidence: string
+          created_at: string
+          created_by: string | null
+          id: string
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_note: string | null
+          session_id: string
+          source_model: string | null
+          support: string
+          text: string
+          type: string
+          updated_at: string
+          warning: string | null
+        }
+        Insert: {
+          confidence?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_note?: string | null
+          session_id: string
+          source_model?: string | null
+          support?: string
+          text: string
+          type?: string
+          updated_at?: string
+          warning?: string | null
+        }
+        Update: {
+          confidence?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_note?: string | null
+          session_id?: string
+          source_model?: string | null
+          support?: string
+          text?: string
+          type?: string
+          updated_at?: string
+          warning?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claims_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evidence: {
         Row: {
           checksum: string | null
