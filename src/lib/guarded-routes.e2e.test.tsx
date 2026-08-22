@@ -13,6 +13,22 @@ vi.mock("@/lib/permissions.functions", () => ({
   getMyRoles: () => Promise.resolve({ roles: [] }),
 }));
 
+// Data server fns called by the review loaders — mocked so the loader drives
+// the guard path without a live backend or server runtime.
+vi.mock("@/lib/sessions.functions", () => ({
+  getSessionById: () => Promise.resolve(null),
+}));
+vi.mock("@/lib/transcript.functions", () => ({
+  listTranscript: () => Promise.resolve([]),
+}));
+vi.mock("@/lib/claims.functions", () => ({
+  listClaims: () => Promise.resolve([]),
+  listReviewQueue: () => Promise.resolve([]),
+  generateClaims: () => Promise.resolve({ created: 0 }),
+  reverifyClaims: () => Promise.resolve({ updated: 0 }),
+  reviewClaim: () => Promise.resolve({ ok: true }),
+}));
+
 import { Route as AuditRoute } from "@/routes/_authenticated.audit";
 import { Route as TeamRoute } from "@/routes/_authenticated.team";
 import { Route as ReviewRoute } from "@/routes/_authenticated.review";
