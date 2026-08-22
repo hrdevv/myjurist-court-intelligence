@@ -13,6 +13,7 @@ import {
   listClaims,
   reverifyClaims,
   reviewClaim,
+  type ClaimAnchorRow,
   type ClaimWithAnchors,
 } from "@/lib/claims.functions";
 import type { ReviewStatus } from "@/lib/mock-data";
