@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@breezystack/lamejs": "^1.2.7",
-    "@cloudflare/vite-plugin": "^1.25.5",
+    "@cloudflare/vite-plugin": "^1.53.1",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
     "@lovable.dev/vite-tanstack-config": "2.13.1",
