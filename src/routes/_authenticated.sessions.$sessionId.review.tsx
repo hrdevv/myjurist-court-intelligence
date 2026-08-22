@@ -109,7 +109,7 @@ function ReviewDetail() {
     ? resolveAnchoredSegments(selected.anchors, transcript)
     : [];
   const hasAnchor = Boolean(
-    selected?.anchors.some((a) => a.status === "verified" || a.status === "manual"),
+    selected?.anchors.some((a: ClaimAnchorRow) => a.status === "verified" || a.status === "manual"),
   );
 
   async function withBusy(key: string, fn: () => Promise<unknown>, success: string) {
