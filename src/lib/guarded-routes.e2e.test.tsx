@@ -16,7 +16,16 @@ vi.mock("@/lib/permissions.functions", () => ({
 // Data server fns called by the review loaders — mocked so the loader drives
 // the guard path without a live backend or server runtime.
 vi.mock("@/lib/sessions.functions", () => ({
-  getSessionById: () => Promise.resolve(null),
+  getSessionById: () =>
+    Promise.resolve({
+      id: "s1",
+      case_id: "c1",
+      title: "Mock Session",
+      date: null,
+      status: "active",
+      created_at: "",
+      updated_at: "",
+    }),
 }));
 vi.mock("@/lib/transcript.functions", () => ({
   listTranscript: () => Promise.resolve([]),
