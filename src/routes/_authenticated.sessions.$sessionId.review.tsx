@@ -30,7 +30,7 @@ import {
   type AnchoredSegment,
 } from "@/lib/claim-rendering";
 import { guardRouteAccess } from "@/lib/route-guards";
-import { Check, X, Pencil, HelpCircle, FileQuestion, Sparkles, ShieldCheck } from "lucide-react";
+import { Check, X, Pencil, HelpCircle, FileQuestion, Sparkles, ShieldCheck, AlertTriangle, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/review")({
   head: () => ({
@@ -53,16 +53,11 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/review
     ]);
     return { session: row, transcript, claims };
   },
-  notFoundComponent: () => (
-    <AppLayout>
-      <PageHeader title="Session not found" />
-    </AppLayout>
-  ),
-  errorComponent: () => (
-    <AppLayout>
-      <PageHeader title="Something went wrong" />
-    </AppLayout>
-  ),
+  pendingMs: 0,
+  pendingMinMs: 300,
+  pendingComponent: ReviewPending,
+  notFoundComponent: ReviewNotFound,
+  errorComponent: ReviewError,
   component: ReviewDetail,
 });
 
@@ -83,6 +78,108 @@ const filters: { key: string; label: string; match: (c: ClaimWithAnchors) => boo
   { key: "rejected", label: "Rejected", match: (c) => c.review_status === "rejected" },
   { key: "all", label: "All", match: () => true },
 ];
+
+function ReviewPending() {
+  return (
+    <AppLayout>
+      <div className="mb-8 animate-pulse">
+        <div className="h-3 w-44 rounded bg-muted mb-3" />
+        <div className="h-8 w-64 max-w-full rounded bg-muted mb-2" />
+        <div className="h-4 w-96 max-w-full rounded bg-muted" />
+      </div>
+      <div className="flex flex-wrap gap-2 mb-6 animate-pulse">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="h-7 w-24 rounded-full bg-muted" />
+        ))}
+      </div>
+      <div className="grid lg:grid-cols-[320px_1fr] gap-6 animate-pulse">
+        <Card className="p-2 h-fit space-y-1">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="p-3 space-y-2">
+              <div className="h-4 w-20 rounded bg-muted" />
+              <div className="h-4 w-full rounded bg-muted" />
+              <div className="h-4 w-3/4 rounded bg-muted" />
+            </div>
+          ))}
+        </Card>
+        <div className="grid md:grid-cols-2 gap-4">
+          {[0, 1].map((i) => (
+            <Card key={i} className="p-5 space-y-3">
+              <div className="h-3 w-32 rounded bg-muted" />
+              <div className="h-4 w-full rounded bg-muted" />
+              <div className="h-4 w-5/6 rounded bg-muted" />
+              <div className="h-4 w-2/3 rounded bg-muted" />
+              <div className="h-9 w-full rounded bg-muted" />
+            </Card>
+          ))}
+        </div>
+      </div>
+    </AppLayout>
+  );
+}
+
+function ReviewNotFound() {
+  return (
+    <AppLayout>
+      <PageHeader
+        eyebrow="Review Console"
+        title="Session not found"
+        description="This session does not exist, was removed, or you don't have access to it."
+      />
+      <Card className="p-10 md:p-14 text-center">
+        <div className="mx-auto size-12 rounded-full bg-muted flex items-center justify-center mb-4">
+          <FileQuestion className="size-6 text-muted-foreground" />
+        </div>
+        <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+          Check that you opened the review console from an existing session, or browse your cases to
+          find the right one.
+        </p>
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button variant="outline" asChild>
+            <Link to="/cases">Browse cases</Link>
+          </Button>
+          <Button asChild>
+            <Link to="/">Go to dashboard</Link>
+          </Button>
+        </div>
+      </Card>
+    </AppLayout>
+  );
+}
+
+function ReviewError({ error }: { error: unknown }) {
+  const router = useRouter();
+  const { sessionId } = Route.useParams();
+  const message =
+    error instanceof Error && error.message
+      ? error.message
+      : "An unexpected error occurred while loading the review queue.";
+  return (
+    <AppLayout>
+      <PageHeader
+        eyebrow="Review Console"
+        title="Unable to load the review queue"
+        description="The session, transcript, or draft claims could not be loaded. You can retry or return to the session workspace."
+      />
+      <Card className="p-10 md:p-14 text-center">
+        <div className="mx-auto size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mb-4">
+          <AlertTriangle className="size-6" />
+        </div>
+        <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">{message}</p>
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button onClick={() => router.invalidate()}>
+            <RefreshCw className="size-4" /> Try again
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/sessions/$sessionId" params={{ sessionId }}>
+              Back to session
+            </Link>
+          </Button>
+        </div>
+      </Card>
+    </AppLayout>
+  );
+}
 
 function ReviewDetail() {
   const { session, transcript, claims } = Route.useLoaderData();
@@ -181,6 +278,7 @@ function ReviewDetail() {
   );
 
   if (claims.length === 0 || !selected) {
+    const hasTranscript = transcript.length > 0;
     return (
       <AppLayout>
         <PageHeader
@@ -189,10 +287,34 @@ function ReviewDetail() {
           description="No AI-assisted draft claims yet. Generate a review draft from the session transcript to populate the queue."
           actions={actions}
         />
-        <Card className="p-10 text-center text-sm text-muted-foreground">
-          {transcript.length === 0
-            ? "This session has no transcript yet. Record and transcribe the hearing first, then generate draft claims."
-            : "Draft claims will appear here once generated. Every claim is anchored to the transcript by a deterministic verifier before a reviewer sees it."}
+        <Card className="p-10 md:p-14 text-center">
+          <div className="mx-auto size-12 rounded-full bg-muted flex items-center justify-center mb-4">
+            {hasTranscript ? (
+              <Sparkles className="size-6 text-muted-foreground" />
+            ) : (
+              <FileQuestion className="size-6 text-muted-foreground" />
+            )}
+          </div>
+          <h2 className="font-serif text-lg mb-2">
+            {hasTranscript ? "No draft claims yet" : "No transcript yet"}
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+            {hasTranscript
+              ? "Generate a review draft from this session's transcript. Every claim is anchored to the transcript by a deterministic verifier before a reviewer sees it."
+              : "This session has no transcript yet. Record and transcribe the hearing first, then generate draft claims."}
+          </p>
+          {hasTranscript ? (
+            <Button onClick={generate} disabled={busy !== null}>
+              <Sparkles className="size-4" />
+              {busy === "generate" ? "Generating…" : "Generate draft claims"}
+            </Button>
+          ) : (
+            <Button asChild>
+              <Link to="/sessions/$sessionId" params={{ sessionId: session.id }}>
+                Go to session workspace
+              </Link>
+            </Button>
+          )}
         </Card>
       </AppLayout>
     );
