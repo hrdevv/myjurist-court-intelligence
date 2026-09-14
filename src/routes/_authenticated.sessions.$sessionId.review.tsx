@@ -1,34 +1,16 @@
 import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { type AIClaim, type ReviewStatus, type TranscriptSegment } from "@/lib/mock-data";
 import { getSessionById } from "@/lib/sessions.functions";
-import { listTranscript } from "@/lib/transcript.functions";
-import {
-  generateClaims,
-  listClaims,
-  reverifyClaims,
-  reviewClaim,
-  type ClaimAnchorRow,
-  type ClaimWithAnchors,
-} from "@/lib/claims.functions";
-import type { ReviewStatus } from "@/lib/mock-data";
-import {
-  AIDraftBadge,
-  ClaimTypeBadge,
-  ConfidenceBadge,
-  ReviewBadge,
-} from "@/components/legal/Badges";
-import {
-  AnchorBadgeList,
-  anchorStatuses,
-  resolveAnchoredSegments,
-  type AnchoredSegment,
-} from "@/lib/claim-rendering";
+import { listClaimsBySession, updateClaimReview } from "@/lib/claims.functions";
+import { buildSessionView } from "@/lib/session-content";
+import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
+import { AnchorBadgeList, resolveAnchorSegments } from "@/lib/claim-rendering";
 import { guardRouteAccess } from "@/lib/route-guards";
 import { Check, X, Pencil, HelpCircle, FileQuestion, Sparkles, ShieldCheck, AlertTriangle, RefreshCw } from "lucide-react";
 
@@ -47,11 +29,8 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/review
     await guardRouteAccess("reviewQueue");
     const row = await getSessionById({ data: { id: params.sessionId } });
     if (!row) throw notFound();
-    const [transcript, claims] = await Promise.all([
-      listTranscript({ data: { sessionId: params.sessionId } }),
-      listClaims({ data: { sessionId: params.sessionId } }),
-    ]);
-    return { session: row, transcript, claims };
+    const claims = await listClaimsBySession({ data: { sessionId: params.sessionId } });
+    return { session: { ...buildSessionView(row), claims } };
   },
   pendingMs: 0,
   pendingMinMs: 300,
@@ -182,12 +161,8 @@ function ReviewError({ error }: { error: unknown }) {
 }
 
 function ReviewDetail() {
-  const { session, transcript, claims } = Route.useLoaderData();
+  const { session } = Route.useLoaderData();
   const router = useRouter();
-  const runGenerate = useServerFn(generateClaims);
-  const runReverify = useServerFn(reverifyClaims);
-  const runReview = useServerFn(reviewClaim);
-
   const [filter, setFilter] = useState("pending");
   const [selectedId, setSelectedId] = useState<string>(
     claims.find((c: ClaimWithAnchors) => c.review_status === "pending")?.id ?? claims[0]?.id ?? "",
@@ -257,25 +232,14 @@ function ReviewDetail() {
     );
   };
 
-  const actions = (
-    <div className="flex flex-wrap gap-2">
-      <Button onClick={generate} disabled={busy !== null}>
-        <Sparkles className="size-4" />
-        {busy === "generate" ? "Generating…" : "Generate draft claims"}
-      </Button>
-      {claims.length > 0 && (
-        <Button variant="outline" onClick={reverify} disabled={busy !== null}>
-          <ShieldCheck className="size-4" />
-          {busy === "reverify" ? "Verifying…" : "Re-verify anchors"}
-        </Button>
-      )}
-      <Button variant="outline" asChild>
-        <Link to="/sessions/$sessionId" params={{ sessionId: session.id }}>
-          Back to session
-        </Link>
-      </Button>
-    </div>
-  );
+  const filtered = useMemo(() => session.claims.filter(filters.find(f => f.key === filter)!.match), [session.claims, filter]);
+  const selected = session.claims.find((c: AIClaim) => c.id === selectedId) ?? filtered[0] ?? session.claims[0];
+  const sourceSegments = resolveAnchorSegments(selected?.anchors ?? []);
+  const saveReview = async (review: ReviewStatus) => {
+    if (!selected) return;
+    await updateClaimReview({ data: { claimId: selected.id, review, reviewerNote: note } });
+    await router.invalidate();
+  };
 
   if (claims.length === 0 || !selected) {
     const hasTranscript = transcript.length > 0;

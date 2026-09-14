@@ -4,17 +4,30 @@ import { Card } from "@/components/ui/card";
 import { ScrollableTable, stickyTableHeaderClass } from "@/components/ui/scrollable-table";
 import { mockUsers } from "@/lib/mock-data";
 import { guardRouteAccess } from "@/lib/route-guards";
+import { DemoOutputsDisabled } from "@/components/legal/DemoOutputsDisabled";
+import { requireDemoLegalOutputs } from "@/lib/demo-mode";
 
 export const Route = createFileRoute("/_authenticated/team")({
   head: () => ({ meta: [{ title: "Team — Courtroom Intelligence" }, { name: "description", content: "View organization members and their roles, and manage role-based access for viewers, reviewers, and lawyers in your workspace." }] }),
   loader: async () => {
     await guardRouteAccess("team");
+    return { demoLegalOutputsEnabled: requireDemoLegalOutputs() };
   },
   errorComponent: () => <AppLayout><PageHeader title="Something went wrong" /></AppLayout>,
   component: Team,
 });
 
 function Team() {
+  const { demoLegalOutputsEnabled } = Route.useLoaderData();
+
+  if (!demoLegalOutputsEnabled) {
+    return (
+      <AppLayout>
+        <DemoOutputsDisabled surface="Team" />
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <PageHeader eyebrow="Demo Legal Practice" title="Team" description="Role-based access will be enforced server-side in production." />

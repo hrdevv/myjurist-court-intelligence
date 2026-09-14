@@ -1,18 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
-import { sessions } from "@/lib/mock-data";
+import { listSessionsForReports } from "@/lib/sessions.functions";
 import { requireSession } from "@/lib/route-guards";
 
 export const Route = createFileRoute("/_authenticated/reports")({
   head: () => ({ meta: [{ title: "Reports — Courtroom Intelligence" }, { name: "description", content: "Preview and export human-reviewed legal session reports, with every claim verified and linked to its supporting evidence." }] }),
   loader: async () => {
     await requireSession();
+    const sessions = await listSessionsForReports();
+    return { sessions };
   },
   component: Reports,
 });
 
 function Reports() {
+  const { sessions } = Route.useLoaderData();
+
   return (
     <AppLayout>
       <PageHeader eyebrow="Workspace" title="Reports" description="Human-reviewed report previews per session." />

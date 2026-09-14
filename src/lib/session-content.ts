@@ -1,7 +1,6 @@
 import {
   transcript as demoTranscript,
   evidence as demoEvidence,
-  claims as demoClaims,
   mockUsers,
   type Session,
 } from "@/lib/mock-data";
@@ -10,13 +9,13 @@ import type { SessionRow, CaseRow } from "@/lib/cases.functions";
 /**
  * Bridges a real database session row to the UI's `Session` shape.
  *
- * Transcript, evidence and AI claims move to their own tables in later phases.
- * Until then, the demo session shows the seeded demo content so the prototype
- * experience is preserved, while freshly created sessions start empty.
+ * Transcript and evidence move through their own tables in later phases. Claims
+ * are loaded from persisted `ai_claims` rows by the route loaders that need
+ * legal-output data.
  */
 export function buildSessionView(row: SessionRow): Session {
   const content = row.is_demo
-    ? { transcript: demoTranscript, evidence: demoEvidence, claims: demoClaims }
+    ? { transcript: demoTranscript, evidence: demoEvidence, claims: [] }
     : { transcript: [], evidence: [], claims: [] };
 
   return {

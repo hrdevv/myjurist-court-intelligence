@@ -33,6 +33,18 @@ export const getSessionById = createServerFn({ method: "GET" })
     return (row ?? null) as SessionRow | null;
   });
 
+/** All visible sessions, newest first, for report previews. */
+export const listSessionsForReports = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<SessionRow[]> => {
+    const { data: rows, error } = await context.supabase
+      .from("sessions")
+      .select("*")
+      .order("date", { ascending: false });
+    if (error) throw error;
+    return (rows ?? []) as SessionRow[];
+  });
+
 /** Create a session under a case and record an audit entry. */
 export const createSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
