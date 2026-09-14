@@ -15,10 +15,11 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@cloudflare/vite-plugin": "^1.25.5",
+    "@breezystack/lamejs": "^1.2.7",
+    "@cloudflare/vite-plugin": "^1.53.1",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
-    "@lovable.dev/vite-tanstack-config": "2.7.1",
+    "@lovable.dev/vite-tanstack-config": "2.13.1",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-aspect-ratio": "^1.1.8",
@@ -48,10 +49,11 @@
     "@supabase/supabase-js": "^2.107.0",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-query": "^5.83.0",
-    "@tanstack/react-router": "^1.168.25",
-    "@tanstack/react-start": "^1.167.50",
-    "@tanstack/router-plugin": "^1.167.28",
+    "@tanstack/react-router": "^1.170.29",
+    "@tanstack/react-start": "^1.168.48",
+    "@tanstack/router-plugin": "^1.168.32",
     "class-variance-authority": "^0.7.1",
+    "client-zip": "^2.5.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
@@ -91,5 +93,12 @@
     "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1",
     "vitest": "^2"
+  },
+  "overrides": {
+    "js-yaml": "^4.3.1",
+    "ws": "^8.21.3",
+    "undici": "^7.29.0",
+    "esbuild": "^0.28.2",
+    "sharp": "^0.35.3"
   }
 }
