@@ -10,6 +10,19 @@ type SupabaseLike = {
   from: (table: string) => any;
 };
 
+async function requireReviewRole(db: SupabaseLike, userId: string): Promise<void> {
+  const { data, error } = await db
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .in("role", ["lawyer", "paralegal", "reviewer"])
+    .limit(1);
+
+  if (error || !data?.length) {
+    throw new Response("Forbidden", { status: 403 });
+  }
+}
+
 type ClaimRow = {
   id: string;
   session_id: string;
@@ -134,6 +147,7 @@ export const listReviewClaims = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<ReviewClaim[]> => {
     const db = context.supabase as SupabaseLike;
+    await requireReviewRole(db, context.userId);
     const { data: rows, error } = await db
       .from("claims")
       .select("id, session_id, type, text, confidence, support, review_status, reviewer_note, warning, sessions!inner(title)")
@@ -156,6 +170,7 @@ export const updateClaimReview = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const db = context.supabase as SupabaseLike;
+    await requireReviewRole(db, context.userId);
     const { data: existing, error: loadError } = await db
       .from("claims")
       .select("id, session_id")
