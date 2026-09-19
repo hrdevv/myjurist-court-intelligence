@@ -66,7 +66,7 @@ async function loadAnchors(db: SupabaseLike, claimIds: string[]): Promise<Map<st
 
   const { data: anchors, error } = await db
     .from("claim_anchors")
-    .select("claim_id, segment_id, status")
+    .select("claim_id, segment_id, status, quote, match_score")
     .in("claim_id", claimIds)
     .order("created_at", { ascending: true });
   if (error) throw error;
