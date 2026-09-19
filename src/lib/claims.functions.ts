@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { AIClaim, ClaimAnchor, ClaimType, ConfidenceLevel, ReviewStatus } from "@/lib/mock-data";
+import type { AIClaim, AnchorStatus, ClaimAnchor, ClaimType, ConfidenceLevel, ReviewStatus } from "@/lib/mock-data";
 
 type SupabaseLike = {
   // The generated Supabase types are updated separately from migrations in this
@@ -25,7 +25,7 @@ type ClaimRow = {
 export interface ClaimAnchorRow {
   claim_id: string;
   segment_id: string | null;
-  status: string;
+  status: AnchorStatus;
   quote: string | null;
   match_score: number | null;
 };
@@ -59,6 +59,11 @@ function asClaim(row: ClaimRow, anchors: ClaimAnchor[]): AIClaim {
     warning: row.warning ?? undefined,
   };
 }
+
+export type ReviewClaim = AIClaim & {
+  sessionId: string;
+  sessionTitle: string;
+};
 
 async function loadAnchors(db: SupabaseLike, claimIds: string[]): Promise<Map<string, ClaimAnchor[]>> {
   const byClaim = new Map<string, ClaimAnchor[]>();
@@ -127,7 +132,7 @@ export const listClaimsBySession = createServerFn({ method: "GET" })
 
 export const listReviewClaims = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }): Promise<ReviewClaim[]> => {
     const db = context.supabase as SupabaseLike;
     const { data: rows, error } = await db
       .from("ai_claims")
@@ -137,7 +142,7 @@ export const listReviewClaims = createServerFn({ method: "GET" })
 
     const claimRows = (rows ?? []) as (ClaimRow & { sessions?: { title?: string } })[];
     const anchorsByClaim = await loadAnchors(db, claimRows.map((row) => row.id));
-    return claimRows.map((row) => ({
+    return claimRows.map((row): ReviewClaim => ({
       ...asClaim(row, anchorsByClaim.get(row.id) ?? []),
       sessionId: row.session_id,
       sessionTitle: row.sessions?.title ?? "Session",

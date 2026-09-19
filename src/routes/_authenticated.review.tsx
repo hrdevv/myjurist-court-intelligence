@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList } from "@/lib/claim-rendering";
 import { guardRouteAccess } from "@/lib/route-guards";
-import { listReviewClaims } from "@/lib/claims.functions";
+import { listReviewClaims, type ReviewClaim } from "@/lib/claims.functions";
 
 export const Route = createFileRoute("/_authenticated/review")({
   head: () => ({
@@ -43,7 +43,7 @@ function ReviewQueue() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {claims.map((c) => (
+          {claims.map((c: ReviewClaim) => (
             <Card
               key={c.id}
               className="p-4 flex flex-wrap items-start gap-4 hover:bg-accent/20 transition-colors"
