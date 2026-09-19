@@ -12,7 +12,7 @@ import { buildSessionView } from "@/lib/session-content";
 import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
 import { AnchorBadgeList, resolveAnchorSegments } from "@/lib/claim-rendering";
 import { guardRouteAccess } from "@/lib/route-guards";
-import { Check, X, Pencil, HelpCircle, FileQuestion, Sparkles, ShieldCheck, AlertTriangle, RefreshCw } from "lucide-react";
+import { Check, X, HelpCircle, FileQuestion, Sparkles, ShieldCheck, AlertTriangle, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/review")({
   head: () => ({
@@ -380,7 +380,7 @@ function ReviewDetail() {
               </div>
             )}
 
-            {selected.reviewer_note && (
+            {selected.reviewerNote && (
               <div className="text-xs bg-muted rounded-md p-2 mb-4">
                 <span className="font-medium">Reviewer note:</span> {selected.reviewerNote}
               </div>
