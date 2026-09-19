@@ -17,7 +17,7 @@ type ClaimRow = {
   text: string;
   confidence: string;
   support: string;
-  review: string;
+  review_status: string;
   reviewer_note: string | null;
   warning: string | null;
 };
@@ -54,7 +54,7 @@ function asClaim(row: ClaimRow, anchors: ClaimAnchor[]): AIClaim {
     confidence: row.confidence as ConfidenceLevel,
     support: row.support as AIClaim["support"],
     anchors,
-    review: row.review as ReviewStatus,
+    review: row.review_status as ReviewStatus,
     reviewerNote: row.reviewer_note ?? undefined,
     warning: row.warning ?? undefined,
   };
@@ -119,8 +119,8 @@ export const listClaimsBySession = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const db = context.supabase as SupabaseLike;
     const { data: rows, error } = await db
-      .from("ai_claims")
-      .select("id, session_id, type, text, confidence, support, review, reviewer_note, warning")
+      .from("claims")
+      .select("id, session_id, type, text, confidence, support, review_status, reviewer_note, warning")
       .eq("session_id", data.sessionId)
       .order("created_at", { ascending: true });
     if (error) throw error;
@@ -135,8 +135,8 @@ export const listReviewClaims = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<ReviewClaim[]> => {
     const db = context.supabase as SupabaseLike;
     const { data: rows, error } = await db
-      .from("ai_claims")
-      .select("id, session_id, type, text, confidence, support, review, reviewer_note, warning, sessions!inner(title)")
+      .from("claims")
+      .select("id, session_id, type, text, confidence, support, review_status, reviewer_note, warning, sessions!inner(title)")
       .order("created_at", { ascending: false });
     if (error) throw error;
 
@@ -157,22 +157,22 @@ export const updateClaimReview = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const db = context.supabase as SupabaseLike;
     const { data: existing, error: loadError } = await db
-      .from("ai_claims")
+      .from("claims")
       .select("id, session_id")
       .eq("id", data.claimId)
       .single();
     if (loadError) throw loadError;
 
     const { data: updated, error } = await db
-      .from("ai_claims")
+      .from("claims")
       .update({
-        review: data.review,
+        review_status: data.review,
         reviewer_note: data.reviewerNote ?? null,
         reviewed_by: context.userId,
         reviewed_at: new Date().toISOString(),
       })
       .eq("id", data.claimId)
-      .select("id, session_id, type, text, confidence, support, review, reviewer_note, warning")
+      .select("id, session_id, type, text, confidence, support, review_status, reviewer_note, warning")
       .single();
     if (error) throw error;
 
