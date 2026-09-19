@@ -5,7 +5,7 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { type AIClaim, type ReviewStatus, type TranscriptSegment } from "@/lib/mock-data";
+import { type AIClaim, type ReviewStatus } from "@/lib/mock-data";
 import { getSessionById } from "@/lib/sessions.functions";
 import { listClaimsBySession, updateClaimReview } from "@/lib/claims.functions";
 import { buildSessionView } from "@/lib/session-content";
@@ -40,8 +40,8 @@ export const Route = createFileRoute("/_authenticated/sessions/$sessionId/review
   component: ReviewDetail,
 });
 
-const filters: { key: string; label: string; match: (c: ClaimWithAnchors) => boolean }[] = [
-  { key: "pending", label: "Pending review", match: (c) => c.review_status === "pending" },
+const filters: { key: string; label: string; match: (c: AIClaim) => boolean }[] = [
+  { key: "pending", label: "Pending review", match: (c) => c.review === "pending" },
   { key: "unsupported", label: "Unsupported", match: (c) => c.support === "unsupported" },
   {
     key: "low",
@@ -53,8 +53,8 @@ const filters: { key: string; label: string; match: (c: ClaimWithAnchors) => boo
     label: "Possible inconsistency candidates",
     match: (c) => c.type === "inconsistency_candidate",
   },
-  { key: "approved", label: "Approved", match: (c) => c.review_status === "approved" },
-  { key: "rejected", label: "Rejected", match: (c) => c.review_status === "rejected" },
+  { key: "approved", label: "Approved", match: (c) => c.review === "approved" },
+  { key: "rejected", label: "Rejected", match: (c) => c.review === "rejected" },
   { key: "all", label: "All", match: () => true },
 ];
 
@@ -162,26 +162,27 @@ function ReviewError({ error }: { error: unknown }) {
 
 function ReviewDetail() {
   const { session } = Route.useLoaderData();
+  const { claims, transcript } = session;
   const router = useRouter();
   const [filter, setFilter] = useState("pending");
   const [selectedId, setSelectedId] = useState<string>(
-    claims.find((c: ClaimWithAnchors) => c.review_status === "pending")?.id ?? claims[0]?.id ?? "",
+    claims.find((c: AIClaim) => c.review === "pending")?.id ?? claims[0]?.id ?? "",
   );
   const [note, setNote] = useState("");
-  const [editText, setEditText] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
+  const activeFilter = filters.find((f) => f.key === filter) ?? filters[0];
   const filtered = useMemo(
-    () => claims.filter(filters.find((f) => f.key === filter)!.match),
-    [claims, filter],
+    () => claims.filter(activeFilter.match),
+    [activeFilter, claims],
   );
   const selected =
-    claims.find((c: ClaimWithAnchors) => c.id === selectedId) ?? filtered[0] ?? claims[0];
-  const sourceSegments: AnchoredSegment[] = selected
+    claims.find((c: AIClaim) => c.id === selectedId) ?? filtered[0] ?? claims[0];
+  const sourceSegments = selected
     ? resolveAnchoredSegments(selected.anchors, transcript)
     : [];
   const hasAnchor = Boolean(
-    selected?.anchors.some((a: ClaimAnchorRow) => a.status === "verified" || a.status === "manual"),
+    selected?.anchors.some((anchor) => anchor.status === "verified" || anchor.status === "manual"),
   );
 
   async function withBusy(key: string, fn: () => Promise<unknown>, success: string) {
@@ -197,48 +198,22 @@ function ReviewDetail() {
     }
   }
 
-  const generate = () =>
-    withBusy(
-      "generate",
-      () => runGenerate({ data: { sessionId: session.id } }),
-      "Draft claims generated and anchored against the transcript.",
-    );
-
-  const reverify = () =>
-    withBusy(
-      "reverify",
-      () => runReverify({ data: { sessionId: session.id } }),
-      "Anchors re-verified against the current transcript.",
-    );
-
-  const decide = (status: ReviewStatus, options?: { text?: string; manualOverride?: boolean }) => {
+  const decide = (status: ReviewStatus) => {
     if (!selected) return;
     return withBusy(
       status,
       async () => {
-        await runReview({
+        await updateClaimReview({
           data: {
             claimId: selected.id,
-            status,
-            note: note.trim() ? note.trim() : undefined,
-            text: options?.text,
-            manualOverride: options?.manualOverride,
+            review: status,
+            reviewerNote: note.trim() ? note.trim() : undefined,
           },
         });
         setNote("");
-        setEditText(null);
       },
       `Claim marked ${status.replace(/_/g, " ")}.`,
     );
-  };
-
-  const filtered = useMemo(() => session.claims.filter(filters.find(f => f.key === filter)!.match), [session.claims, filter]);
-  const selected = session.claims.find((c: AIClaim) => c.id === selectedId) ?? filtered[0] ?? session.claims[0];
-  const sourceSegments = resolveAnchorSegments(selected?.anchors ?? []);
-  const saveReview = async (review: ReviewStatus) => {
-    if (!selected) return;
-    await updateClaimReview({ data: { claimId: selected.id, review, reviewerNote: note } });
-    await router.invalidate();
   };
 
   if (claims.length === 0 || !selected) {
@@ -249,7 +224,13 @@ function ReviewDetail() {
           eyebrow={`Review Console · ${session.title}`}
           title="Review queue"
           description="No AI-assisted draft claims yet. Generate a review draft from the session transcript to populate the queue."
-          actions={actions}
+          actions={
+            <Button variant="outline" asChild>
+              <Link to="/sessions/$sessionId" params={{ sessionId: session.id }}>
+                Back to session
+              </Link>
+            </Button>
+          }
         />
         <Card className="p-10 md:p-14 text-center">
           <div className="mx-auto size-12 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -267,18 +248,11 @@ function ReviewDetail() {
               ? "Generate a review draft from this session's transcript. Every claim is anchored to the transcript by a deterministic verifier before a reviewer sees it."
               : "This session has no transcript yet. Record and transcribe the hearing first, then generate draft claims."}
           </p>
-          {hasTranscript ? (
-            <Button onClick={generate} disabled={busy !== null}>
-              <Sparkles className="size-4" />
-              {busy === "generate" ? "Generating…" : "Generate draft claims"}
-            </Button>
-          ) : (
             <Button asChild>
               <Link to="/sessions/$sessionId" params={{ sessionId: session.id }}>
-                Go to session workspace
+                {hasTranscript ? "Return to session workspace" : "Go to session workspace"}
               </Link>
             </Button>
-          )}
         </Card>
       </AppLayout>
     );
@@ -290,7 +264,20 @@ function ReviewDetail() {
         eyebrow={`Review Console · ${session.title}`}
         title="Review queue"
         description="Approve, reject, or refine AI-assisted draft claims. No anchor, no authority."
-        actions={actions}
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link to="/sessions/$sessionId" params={{ sessionId: session.id }}>
+                Back to session
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/sessions/$sessionId/report" params={{ sessionId: session.id }}>
+                Preview report
+              </Link>
+            </Button>
+          </>
+        }
       />
 
       <div className="flex flex-wrap gap-2 mb-6">
@@ -302,7 +289,7 @@ function ReviewDetail() {
           >
             {f.label}{" "}
             <span className="ml-1 opacity-60">
-              {claims.filter((c: ClaimWithAnchors) => f.match(c)).length}
+              {claims.filter((claim: AIClaim) => f.match(claim)).length}
             </span>
           </button>
         ))}
@@ -315,7 +302,7 @@ function ReviewDetail() {
             {filtered.length === 0 && (
               <li className="p-4 text-sm text-muted-foreground">No claims match this filter.</li>
             )}
-            {filtered.map((c: ClaimWithAnchors) => (
+            {filtered.map((c: AIClaim) => (
               <li key={c.id}>
                 <button
                   onClick={() => {
@@ -331,7 +318,7 @@ function ReviewDetail() {
                   <p className="text-sm line-clamp-2">{c.text}</p>
                   <div className="flex gap-1.5 mt-2 flex-wrap">
                     <ConfidenceBadge level={c.confidence} />
-                    <ReviewBadge status={c.review_status} />
+                    <ReviewBadge status={c.review} />
                   </div>
                 </button>
               </li>
@@ -355,7 +342,7 @@ function ReviewDetail() {
               </div>
             ) : (
               <ol className="space-y-3">
-                {sourceSegments.map((seg: AnchoredSegment) => (
+                {sourceSegments.map((seg) => (
                   <li key={seg.id} className="border-l-2 border-primary/40 pl-3">
                     <div className="font-mono text-xs text-muted-foreground">{seg.timestamp}</div>
                     <div className="text-sm font-medium">{seg.speaker}</div>
@@ -380,20 +367,11 @@ function ReviewDetail() {
             <div className="flex flex-wrap gap-2 mb-3">
               <ClaimTypeBadge type={selected.type} />
               <ConfidenceBadge level={selected.confidence} />
-              <ReviewBadge status={selected.review_status} />
+              <ReviewBadge status={selected.review} />
             </div>
-            {editText === null ? (
-              <p className="text-sm mb-3">{selected.text}</p>
-            ) : (
-              <Textarea
-                value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-                className="mb-3"
-                aria-label="Edit claim text"
-              />
-            )}
+            <p className="text-sm mb-3">{selected.text}</p>
             <div className="flex flex-wrap gap-2 mb-4">
-              <AnchorBadgeList anchors={anchorStatuses(selected.anchors)} />
+              <AnchorBadgeList anchors={selected.anchors} />
             </div>
 
             {selected.warning && (
@@ -404,7 +382,7 @@ function ReviewDetail() {
 
             {selected.reviewer_note && (
               <div className="text-xs bg-muted rounded-md p-2 mb-4">
-                <span className="font-medium">Reviewer note:</span> {selected.reviewer_note}
+                <span className="font-medium">Reviewer note:</span> {selected.reviewerNote}
               </div>
             )}
 
@@ -432,30 +410,6 @@ function ReviewDetail() {
               >
                 <Check className="size-4" /> Approve for Report
               </Button>
-              {editText === null ? (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  disabled={busy !== null}
-                  onClick={() => setEditText(selected.text)}
-                >
-                  <Pencil className="size-4" /> Edit and Approve
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  disabled={busy !== null || !editText.trim()}
-                  onClick={() =>
-                    decide("approved", {
-                      text: editText.trim(),
-                      manualOverride: !hasAnchor,
-                    })
-                  }
-                >
-                  <Check className="size-4" /> Save and approve
-                </Button>
-              )}
               <Button
                 variant="outline"
                 className="w-full"
@@ -484,8 +438,7 @@ function ReviewDetail() {
                 <Button
                   variant="outline"
                   className="col-span-2 w-full"
-                  disabled={busy !== null || !note.trim()}
-                  onClick={() => decide("approved", { manualOverride: true })}
+                  disabled
                 >
                   <ShieldCheck className="size-4" /> Manually confirm and approve
                 </Button>
