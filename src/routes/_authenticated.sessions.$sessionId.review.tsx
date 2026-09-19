@@ -179,10 +179,10 @@ function ReviewDetail() {
   const selected =
     claims.find((c: AIClaim) => c.id === selectedId) ?? filtered[0] ?? claims[0];
   const sourceSegments = selected
-    ? resolveAnchoredSegments(selected.anchors, transcript)
+    ? resolveAnchorSegments(selected.anchors)
     : [];
   const hasAnchor = Boolean(
-    selected?.anchors.some((anchor) => anchor.status === "verified" || anchor.status === "manual"),
+    selected?.anchors.some((anchor: AIClaim["anchors"][number]) => anchor.status === "verified" || anchor.status === "manual"),
   );
 
   async function withBusy(key: string, fn: () => Promise<unknown>, success: string) {
@@ -308,7 +308,6 @@ function ReviewDetail() {
                   onClick={() => {
                     setSelectedId(c.id);
                     setNote("");
-                    setEditText(null);
                   }}
                   className={`w-full text-left p-3 rounded-md transition-colors ${selected.id === c.id ? "bg-accent" : "hover:bg-accent/50"}`}
                 >
@@ -348,8 +347,7 @@ function ReviewDetail() {
                     <div className="text-sm font-medium">{seg.speaker}</div>
                     <p className="text-sm">{seg.text}</p>
                     <p className="text-[11px] text-muted-foreground mt-1">
-                      Anchor: {seg.anchorStatus}
-                      {seg.matchScore != null && ` · match ${(seg.matchScore * 100).toFixed(0)}%`}
+                      Transcript evidence linked to this claim
                     </p>
                   </li>
                 ))}

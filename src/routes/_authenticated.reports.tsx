@@ -3,6 +3,7 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { listSessionsForReports } from "@/lib/sessions.functions";
 import { requireSession } from "@/lib/route-guards";
+import type { SessionRow } from "@/lib/cases.functions";
 
 export const Route = createFileRoute("/_authenticated/reports")({
   head: () => ({ meta: [{ title: "Reports — Courtroom Intelligence" }, { name: "description", content: "Preview and export human-reviewed legal session reports, with every claim verified and linked to its supporting evidence." }] }),
@@ -21,7 +22,7 @@ function Reports() {
     <AppLayout>
       <PageHeader eyebrow="Workspace" title="Reports" description="Human-reviewed report previews per session." />
       <div className="grid md:grid-cols-2 gap-4">
-        {sessions.map(s => (
+        {sessions.map((s: SessionRow) => (
           <Card key={s.id} className="p-5">
             <h3 className="font-serif text-lg">{s.title}</h3>
             <p className="text-sm text-muted-foreground mt-1">{s.date} · Draft report</p>

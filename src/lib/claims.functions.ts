@@ -22,10 +22,12 @@ type ClaimRow = {
   warning: string | null;
 };
 
-type AnchorRow = {
+export interface ClaimAnchorRow {
   claim_id: string;
   segment_id: string | null;
   status: string;
+  quote: string | null;
+  match_score: number | null;
 };
 
 type SegmentRow = {
@@ -69,7 +71,7 @@ async function loadAnchors(db: SupabaseLike, claimIds: string[]): Promise<Map<st
     .order("created_at", { ascending: true });
   if (error) throw error;
 
-  const rows = (anchors ?? []) as AnchorRow[];
+  const rows = (anchors ?? []) as ClaimAnchorRow[];
   const segmentIds = [...new Set(rows.map((a) => a.segment_id).filter(Boolean))] as string[];
   const segmentsById = new Map<string, SegmentRow>();
 
