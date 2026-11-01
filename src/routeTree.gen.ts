@@ -24,6 +24,7 @@ import { Route as AuthenticatedCasesCaseIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedSessionsSessionIdIndexRouteImport } from './routes/_authenticated.sessions.$sessionId.index'
 import { Route as AuthenticatedSessionsSessionIdReportRouteImport } from './routes/_authenticated.sessions.$sessionId.report'
 import { Route as AuthenticatedSessionsSessionIdReviewRouteImport } from './routes/_authenticated.sessions.$sessionId.review'
+import { Route as AuthenticatedSessionsSessionIdClaimsClaimIdRouteImport } from './routes/_authenticated.sessions.$sessionId.claims.$claimId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -104,6 +105,12 @@ const AuthenticatedSessionsSessionIdReviewRoute =
     path: '/sessions/$sessionId/review',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSessionsSessionIdClaimsClaimIdRoute =
+  AuthenticatedSessionsSessionIdClaimsClaimIdRouteImport.update({
+    id: '/sessions/$sessionId/claims/$claimId',
+    path: '/sessions/$sessionId/claims/$claimId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/sessions/$sessionId/report': typeof AuthenticatedSessionsSessionIdReportRoute
   '/sessions/$sessionId/review': typeof AuthenticatedSessionsSessionIdReviewRoute
   '/sessions/$sessionId/': typeof AuthenticatedSessionsSessionIdIndexRoute
+  '/sessions/$sessionId/claims/$claimId': typeof AuthenticatedSessionsSessionIdClaimsClaimIdRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
@@ -136,6 +144,7 @@ export interface FileRoutesByTo {
   '/sessions/$sessionId/report': typeof AuthenticatedSessionsSessionIdReportRoute
   '/sessions/$sessionId/review': typeof AuthenticatedSessionsSessionIdReviewRoute
   '/sessions/$sessionId': typeof AuthenticatedSessionsSessionIdIndexRoute
+  '/sessions/$sessionId/claims/$claimId': typeof AuthenticatedSessionsSessionIdClaimsClaimIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -154,6 +163,7 @@ export interface FileRoutesById {
   '/_authenticated/sessions/$sessionId/report': typeof AuthenticatedSessionsSessionIdReportRoute
   '/_authenticated/sessions/$sessionId/review': typeof AuthenticatedSessionsSessionIdReviewRoute
   '/_authenticated/sessions/$sessionId/': typeof AuthenticatedSessionsSessionIdIndexRoute
+  '/_authenticated/sessions/$sessionId/claims/$claimId': typeof AuthenticatedSessionsSessionIdClaimsClaimIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/sessions/$sessionId/report'
     | '/sessions/$sessionId/review'
     | '/sessions/$sessionId/'
+    | '/sessions/$sessionId/claims/$claimId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/sessions/$sessionId/report'
     | '/sessions/$sessionId/review'
     | '/sessions/$sessionId'
+    | '/sessions/$sessionId/claims/$claimId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -205,6 +217,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sessions/$sessionId/report'
     | '/_authenticated/sessions/$sessionId/review'
     | '/_authenticated/sessions/$sessionId/'
+    | '/_authenticated/sessions/$sessionId/claims/$claimId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -320,6 +333,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSessionsSessionIdReviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/sessions/$sessionId/claims/$claimId': {
+      id: '/_authenticated/sessions/$sessionId/claims/$claimId'
+      path: '/sessions/$sessionId/claims/$claimId'
+      fullPath: '/sessions/$sessionId/claims/$claimId'
+      preLoaderRoute: typeof AuthenticatedSessionsSessionIdClaimsClaimIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -336,6 +356,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSessionsSessionIdReportRoute: typeof AuthenticatedSessionsSessionIdReportRoute
   AuthenticatedSessionsSessionIdReviewRoute: typeof AuthenticatedSessionsSessionIdReviewRoute
   AuthenticatedSessionsSessionIdIndexRoute: typeof AuthenticatedSessionsSessionIdIndexRoute
+  AuthenticatedSessionsSessionIdClaimsClaimIdRoute: typeof AuthenticatedSessionsSessionIdClaimsClaimIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -354,6 +375,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSessionsSessionIdReviewRoute,
   AuthenticatedSessionsSessionIdIndexRoute:
     AuthenticatedSessionsSessionIdIndexRoute,
+  AuthenticatedSessionsSessionIdClaimsClaimIdRoute:
+    AuthenticatedSessionsSessionIdClaimsClaimIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
