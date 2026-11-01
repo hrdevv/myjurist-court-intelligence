@@ -32,10 +32,22 @@ vi.mock("@/lib/transcript.functions", () => ({
 }));
 vi.mock("@/lib/claims.functions", () => ({
   listClaims: () => Promise.resolve([]),
+  listClaimsBySession: () => Promise.resolve([]),
+  listReviewClaims: () => Promise.resolve([]),
   listReviewQueue: () => Promise.resolve([]),
   generateClaims: () => Promise.resolve({ created: 0 }),
   reverifyClaims: () => Promise.resolve({ updated: 0 }),
   reviewClaim: () => Promise.resolve({ ok: true }),
+  updateClaimReview: () =>
+    Promise.resolve({
+      id: "c1",
+      type: "key_statement",
+      text: "",
+      confidence: "high",
+      support: "supported",
+      anchors: [],
+      review: "approved",
+    }),
 }));
 
 import { Route as AuditRoute } from "@/routes/_authenticated.audit";
