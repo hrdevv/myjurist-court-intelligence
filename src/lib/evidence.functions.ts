@@ -114,7 +114,7 @@ export const getEvidenceSignedUrl = createServerFn({ method: "POST" })
 
     const { data: signed, error: signErr } = await supabase.storage
       .from(EVIDENCE_BUCKET)
-      .createSignedUrl(row.storage_path, 300);
+      .createSignedUrl(row.storage_path, 60);
     if (signErr || !signed?.signedUrl) {
       throw signErr ?? new Error("Could not create a download link.");
     }

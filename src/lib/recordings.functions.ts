@@ -112,7 +112,7 @@ export const getRecordingSignedUrl = createServerFn({ method: "POST" })
 
     const { data: signed, error: signErr } = await supabase.storage
       .from(RECORDINGS_BUCKET)
-      .createSignedUrl(row.storage_path, 3600);
+      .createSignedUrl(row.storage_path, 60);
     if (signErr || !signed?.signedUrl) {
       throw signErr ?? new Error("Could not create a playback link.");
     }
