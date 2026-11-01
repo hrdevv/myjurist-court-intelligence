@@ -81,7 +81,7 @@ export const getSessionExportManifest = createServerFn({ method: "POST" })
       if (r.storage_path) {
         const { data: signed } = await supabase.storage
           .from(RECORDINGS_BUCKET)
-          .createSignedUrl(r.storage_path, 3600);
+          .createSignedUrl(r.storage_path, 60);
         url = signed?.signedUrl ?? null;
       }
       exported.push({
