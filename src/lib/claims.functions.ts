@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { AIClaim, AnchorStatus, ClaimAnchor, ClaimType, ConfidenceLevel, ReviewStatus } from "@/lib/mock-data";
+import { buildReviewHistory, type AuditLogLike, type ReviewHistoryEntry } from "@/lib/claim-history";
 
 type SupabaseLike = {
   // The generated Supabase types are updated separately from migrations in this
@@ -191,13 +192,69 @@ export const updateClaimReview = createServerFn({ method: "POST" })
       .single();
     if (error) throw error;
 
+    const { data: sessionRow } = await db
+      .from("sessions")
+      .select("case_id")
+      .eq("id", existing.session_id)
+      .maybeSingle();
+
     await db.from("audit_logs").insert({
       actor_id: context.userId,
       session_id: existing.session_id,
+      case_id: sessionRow?.case_id ?? null,
       action: "claim.reviewed",
-      detail: { claim_id: data.claimId, review: data.review },
+      detail: { claim_id: data.claimId, review: data.review, reviewer_note: data.reviewerNote ?? null },
     });
 
     const anchorsByClaim = await loadAnchors(db, [data.claimId]);
     return asClaim(updated as ClaimRow, anchorsByClaim.get(data.claimId) ?? []);
+  });
+
+export interface ClaimDetail {
+  claim: AIClaim & { sessionId: string };
+  anchors: ClaimAnchorRow[];
+  history: ReviewHistoryEntry[];
+  currentUserId: string;
+}
+
+export const getClaimDetail = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { sessionId: string; claimId: string }) =>
+    z.object({ sessionId: z.string().uuid(), claimId: z.string().uuid() }).parse(data),
+  )
+  .handler(async ({ data, context }): Promise<ClaimDetail | null> => {
+    const db = context.supabase as SupabaseLike;
+    await requireReviewRole(db, context.userId);
+    const { data: row, error } = await db
+      .from("claims")
+      .select("id, session_id, type, text, confidence, support, review_status, reviewer_note, warning")
+      .eq("id", data.claimId)
+      .eq("session_id", data.sessionId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!row) return null;
+
+    const { data: anchorRows, error: anchorError } = await db
+      .from("claim_anchors")
+      .select("claim_id, segment_id, status, quote, match_score")
+      .eq("claim_id", data.claimId)
+      .order("created_at", { ascending: true });
+    if (anchorError) throw anchorError;
+
+    const { data: logs, error: logError } = await db
+      .from("audit_logs")
+      .select("id, actor_id, action, detail, created_at")
+      .eq("session_id", data.sessionId)
+      .eq("action", "claim.reviewed")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (logError) throw logError;
+
+    const anchorsByClaim = await loadAnchors(db, [data.claimId]);
+    return {
+      claim: { ...asClaim(row as ClaimRow, anchorsByClaim.get(data.claimId) ?? []), sessionId: data.sessionId },
+      anchors: (anchorRows ?? []) as ClaimAnchorRow[],
+      history: buildReviewHistory((logs ?? []) as AuditLogLike[], data.claimId),
+      currentUserId: context.userId,
+    };
   });
