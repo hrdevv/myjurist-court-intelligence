@@ -15,7 +15,10 @@ export interface AuditLogLike {
 }
 
 /** Review decisions for one claim, newest first. Ignores other claims and actions. */
-export function buildReviewHistory(logs: readonly AuditLogLike[], claimId: string): ReviewHistoryEntry[] {
+export function buildReviewHistory(
+  logs: readonly AuditLogLike[],
+  claimId: string,
+): ReviewHistoryEntry[] {
   return logs
     .filter((log) => {
       const d = log.detail as { claim_id?: unknown } | null;

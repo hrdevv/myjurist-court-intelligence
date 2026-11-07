@@ -99,7 +99,7 @@ function SessionDetail() {
                   <ShieldAlert className="size-3.5 mt-0.5 shrink-0" />{claim.warning}
                 </div>
               )}
-              <Link to="/sessions/$sessionId/review" params={{ sessionId: session.id }} className="text-xs text-primary hover:underline">Open in Review Console →</Link>
+              <Link to="/sessions/$sessionId/claims/$claimId" params={{ sessionId: session.id, claimId: claim.id }} className="text-xs text-primary hover:underline">Open claim detail →</Link>
             </Card>
           ))}
         </div>

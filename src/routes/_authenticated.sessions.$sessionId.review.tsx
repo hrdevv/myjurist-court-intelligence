@@ -9,10 +9,24 @@ import { type AIClaim, type ReviewStatus } from "@/lib/mock-data";
 import { getSessionById } from "@/lib/sessions.functions";
 import { listClaimsBySession, updateClaimReview } from "@/lib/claims.functions";
 import { buildSessionView } from "@/lib/session-content";
-import { AIDraftBadge, ClaimTypeBadge, ConfidenceBadge, ReviewBadge } from "@/components/legal/Badges";
+import {
+  AIDraftBadge,
+  ClaimTypeBadge,
+  ConfidenceBadge,
+  ReviewBadge,
+} from "@/components/legal/Badges";
 import { AnchorBadgeList, resolveAnchorSegments } from "@/lib/claim-rendering";
 import { guardRouteAccess } from "@/lib/route-guards";
-import { Check, X, HelpCircle, FileQuestion, Sparkles, ShieldCheck, AlertTriangle, RefreshCw } from "lucide-react";
+import {
+  Check,
+  X,
+  HelpCircle,
+  FileQuestion,
+  Sparkles,
+  ShieldCheck,
+  AlertTriangle,
+  RefreshCw,
+} from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sessions/$sessionId/review")({
   head: () => ({
@@ -163,60 +177,11 @@ function ReviewError({ error }: { error: unknown }) {
 function ReviewDetail() {
   const { session } = Route.useLoaderData();
   const { claims, transcript } = session;
-  const router = useRouter();
   const [filter, setFilter] = useState("pending");
-  const [selectedId, setSelectedId] = useState<string>(
-    claims.find((c: AIClaim) => c.review === "pending")?.id ?? claims[0]?.id ?? "",
-  );
-  const [note, setNote] = useState("");
-  const [busy, setBusy] = useState<string | null>(null);
-
   const activeFilter = filters.find((f) => f.key === filter) ?? filters[0];
-  const filtered = useMemo(
-    () => claims.filter(activeFilter.match),
-    [activeFilter, claims],
-  );
-  const selected =
-    claims.find((c: AIClaim) => c.id === selectedId) ?? filtered[0] ?? claims[0];
-  const sourceSegments = selected
-    ? resolveAnchorSegments(selected.anchors)
-    : [];
-  const hasAnchor = Boolean(
-    selected?.anchors.some((anchor: AIClaim["anchors"][number]) => anchor.status === "verified" || anchor.status === "manual"),
-  );
+  const filtered = useMemo(() => claims.filter(activeFilter.match), [activeFilter, claims]);
 
-  async function withBusy(key: string, fn: () => Promise<unknown>, success: string) {
-    setBusy(key);
-    try {
-      await fn();
-      await router.invalidate();
-      toast.success(success);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong.");
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  const decide = (status: ReviewStatus) => {
-    if (!selected) return;
-    return withBusy(
-      status,
-      async () => {
-        await updateClaimReview({
-          data: {
-            claimId: selected.id,
-            review: status,
-            reviewerNote: note.trim() ? note.trim() : undefined,
-          },
-        });
-        setNote("");
-      },
-      `Claim marked ${status.replace(/_/g, " ")}.`,
-    );
-  };
-
-  if (claims.length === 0 || !selected) {
+  if (claims.length === 0) {
     const hasTranscript = transcript.length > 0;
     return (
       <AppLayout>
@@ -248,11 +213,11 @@ function ReviewDetail() {
               ? "Generate a review draft from this session's transcript. Every claim is anchored to the transcript by a deterministic verifier before a reviewer sees it."
               : "This session has no transcript yet. Record and transcribe the hearing first, then generate draft claims."}
           </p>
-            <Button asChild>
-              <Link to="/sessions/$sessionId" params={{ sessionId: session.id }}>
-                {hasTranscript ? "Return to session workspace" : "Go to session workspace"}
-              </Link>
-            </Button>
+          <Button asChild>
+            <Link to="/sessions/$sessionId" params={{ sessionId: session.id }}>
+              {hasTranscript ? "Return to session workspace" : "Go to session workspace"}
+            </Link>
+          </Button>
         </Card>
       </AppLayout>
     );
@@ -295,162 +260,31 @@ function ReviewDetail() {
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-[320px_1fr] gap-6">
-        {/* Queue */}
-        <Card className="p-2 h-fit lg:sticky lg:top-6">
-          <ul className="space-y-1">
-            {filtered.length === 0 && (
-              <li className="p-4 text-sm text-muted-foreground">No claims match this filter.</li>
-            )}
-            {filtered.map((c: AIClaim) => (
-              <li key={c.id}>
-                <button
-                  onClick={() => {
-                    setSelectedId(c.id);
-                    setNote("");
-                  }}
-                  className={`w-full text-left p-3 rounded-md transition-colors ${selected.id === c.id ? "bg-accent" : "hover:bg-accent/50"}`}
-                >
-                  <div className="flex flex-wrap gap-1.5 mb-1.5">
-                    <ClaimTypeBadge type={c.type} />
-                  </div>
-                  <p className="text-sm line-clamp-2">{c.text}</p>
-                  <div className="flex gap-1.5 mt-2 flex-wrap">
-                    <ConfidenceBadge level={c.confidence} />
-                    <ReviewBadge status={c.review} />
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        {/* Side-by-side */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <Card className="p-5">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
-              Transcript &amp; evidence source
-            </div>
-            {sourceSegments.length === 0 ? (
-              <div className="text-sm bg-destructive/10 border border-destructive/20 text-destructive rounded-md p-4 flex items-start gap-2">
-                <FileQuestion className="size-4 mt-0.5" />
-                <div>
-                  No anchor available. This claim cannot be verified against the transcript and must
-                  be excluded from the report unless manually confirmed by a human reviewer.
+      <Card className="p-2">
+        <ul className="space-y-1">
+          {filtered.length === 0 && (
+            <li className="p-4 text-sm text-muted-foreground">No claims match this filter.</li>
+          )}
+          {filtered.map((c: AIClaim) => (
+            <li key={c.id}>
+              <Link
+                to="/sessions/$sessionId/claims/$claimId"
+                params={{ sessionId: session.id, claimId: c.id }}
+                className="block p-3 rounded-md transition-colors hover:bg-accent/50"
+              >
+                <div className="flex flex-wrap gap-1.5 mb-1.5">
+                  <ClaimTypeBadge type={c.type} />
+                  <ConfidenceBadge level={c.confidence} />
+                  <ReviewBadge status={c.review} />
+                  <AnchorBadgeList anchors={c.anchors} />
                 </div>
-              </div>
-            ) : (
-              <ol className="space-y-3">
-                {sourceSegments.map((seg) => (
-                  <li key={seg.id} className="border-l-2 border-primary/40 pl-3">
-                    <div className="font-mono text-xs text-muted-foreground">{seg.timestamp}</div>
-                    <div className="text-sm font-medium">{seg.speaker}</div>
-                    <p className="text-sm">{seg.text}</p>
-                    <p className="text-[11px] text-muted-foreground mt-1">
-                      Transcript evidence linked to this claim
-                    </p>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </Card>
-
-          <Card className="p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                AI-assisted claim
-              </div>
-              <AIDraftBadge />
-            </div>
-            <div className="flex flex-wrap gap-2 mb-3">
-              <ClaimTypeBadge type={selected.type} />
-              <ConfidenceBadge level={selected.confidence} />
-              <ReviewBadge status={selected.review} />
-            </div>
-            <p className="text-sm mb-3">{selected.text}</p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              <AnchorBadgeList anchors={selected.anchors} />
-            </div>
-
-            {selected.warning && (
-              <div className="text-xs bg-destructive/10 text-destructive border border-destructive/20 rounded-md p-2 mb-4">
-                {selected.warning}
-              </div>
-            )}
-
-            {selected.reviewerNote && (
-              <div className="text-xs bg-muted rounded-md p-2 mb-4">
-                <span className="font-medium">Reviewer note:</span> {selected.reviewerNote}
-              </div>
-            )}
-
-            <div className="mb-4">
-              <label
-                className="text-xs uppercase tracking-wider text-muted-foreground"
-                htmlFor="reviewer-note"
-              >
-                Reviewer note
-              </label>
-              <Textarea
-                id="reviewer-note"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Add human-reviewed note…"
-                className="mt-1.5"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                className="w-full"
-                disabled={busy !== null || !hasAnchor}
-                onClick={() => decide("approved")}
-              >
-                <Check className="size-4" /> Approve for Report
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                disabled={busy !== null}
-                onClick={() => decide("uncertain")}
-              >
-                <HelpCircle className="size-4" /> Mark Uncertain
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                disabled={busy !== null}
-                onClick={() => decide("needs_more_evidence")}
-              >
-                <FileQuestion className="size-4" /> Needs More Evidence
-              </Button>
-              <Button
-                variant="destructive"
-                className="col-span-2 w-full"
-                disabled={busy !== null}
-                onClick={() => decide("rejected")}
-              >
-                <X className="size-4" /> Reject
-              </Button>
-              {!hasAnchor && (
-                <Button
-                  variant="outline"
-                  className="col-span-2 w-full"
-                  disabled
-                >
-                  <ShieldCheck className="size-4" /> Manually confirm and approve
-                </Button>
-              )}
-            </div>
-            {!hasAnchor && (
-              <p className="text-[11px] text-muted-foreground italic mt-3">
-                Approval disabled: no verified anchor. Add a reviewer note and manually confirm to
-                override — the override is recorded in the audit trail.
-              </p>
-            )}
-          </Card>
-        </div>
-      </div>
+                <p className="text-sm">{c.text}</p>
+                <span className="text-xs text-primary">Open claim detail →</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Card>
     </AppLayout>
   );
 }

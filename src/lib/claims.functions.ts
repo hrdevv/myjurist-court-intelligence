@@ -1,8 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { AIClaim, AnchorStatus, ClaimAnchor, ClaimType, ConfidenceLevel, ReviewStatus } from "@/lib/mock-data";
-import { buildReviewHistory, type AuditLogLike, type ReviewHistoryEntry } from "@/lib/claim-history";
+import type {
+  AIClaim,
+  AnchorStatus,
+  ClaimAnchor,
+  ClaimType,
+  ConfidenceLevel,
+  ReviewStatus,
+} from "@/lib/mock-data";
+import {
+  buildReviewHistory,
+  type AuditLogLike,
+  type ReviewHistoryEntry,
+} from "@/lib/claim-history";
 
 type SupabaseLike = {
   // The generated Supabase types are updated separately from migrations in this
@@ -42,7 +53,7 @@ export interface ClaimAnchorRow {
   status: AnchorStatus;
   quote: string | null;
   match_score: number | null;
-};
+}
 
 type SegmentRow = {
   id: string;
@@ -79,7 +90,10 @@ export type ReviewClaim = AIClaim & {
   sessionTitle: string;
 };
 
-async function loadAnchors(db: SupabaseLike, claimIds: string[]): Promise<Map<string, ClaimAnchor[]>> {
+async function loadAnchors(
+  db: SupabaseLike,
+  claimIds: string[],
+): Promise<Map<string, ClaimAnchor[]>> {
   const byClaim = new Map<string, ClaimAnchor[]>();
   if (claimIds.length === 0) return byClaim;
 
@@ -134,13 +148,18 @@ export const listClaimsBySession = createServerFn({ method: "GET" })
     const db = context.supabase as SupabaseLike;
     const { data: rows, error } = await db
       .from("claims")
-      .select("id, session_id, type, text, confidence, support, review_status, reviewer_note, warning")
+      .select(
+        "id, session_id, type, text, confidence, support, review_status, reviewer_note, warning",
+      )
       .eq("session_id", data.sessionId)
       .order("created_at", { ascending: true });
     if (error) throw error;
 
     const claimRows = (rows ?? []) as ClaimRow[];
-    const anchorsByClaim = await loadAnchors(db, claimRows.map((row) => row.id));
+    const anchorsByClaim = await loadAnchors(
+      db,
+      claimRows.map((row) => row.id),
+    );
     return claimRows.map((row) => asClaim(row, anchorsByClaim.get(row.id) ?? []));
   });
 
@@ -151,17 +170,24 @@ export const listReviewClaims = createServerFn({ method: "GET" })
     await requireReviewRole(db, context.userId);
     const { data: rows, error } = await db
       .from("claims")
-      .select("id, session_id, type, text, confidence, support, review_status, reviewer_note, warning, sessions!inner(title)")
+      .select(
+        "id, session_id, type, text, confidence, support, review_status, reviewer_note, warning, sessions!inner(title)",
+      )
       .order("created_at", { ascending: false });
     if (error) throw error;
 
     const claimRows = (rows ?? []) as (ClaimRow & { sessions?: { title?: string } })[];
-    const anchorsByClaim = await loadAnchors(db, claimRows.map((row) => row.id));
-    return claimRows.map((row): ReviewClaim => ({
-      ...asClaim(row, anchorsByClaim.get(row.id) ?? []),
-      sessionId: row.session_id,
-      sessionTitle: row.sessions?.title ?? "Session",
-    }));
+    const anchorsByClaim = await loadAnchors(
+      db,
+      claimRows.map((row) => row.id),
+    );
+    return claimRows.map(
+      (row): ReviewClaim => ({
+        ...asClaim(row, anchorsByClaim.get(row.id) ?? []),
+        sessionId: row.session_id,
+        sessionTitle: row.sessions?.title ?? "Session",
+      }),
+    );
   });
 
 export const updateClaimReview = createServerFn({ method: "POST" })
@@ -188,7 +214,9 @@ export const updateClaimReview = createServerFn({ method: "POST" })
         reviewed_at: new Date().toISOString(),
       })
       .eq("id", data.claimId)
-      .select("id, session_id, type, text, confidence, support, review_status, reviewer_note, warning")
+      .select(
+        "id, session_id, type, text, confidence, support, review_status, reviewer_note, warning",
+      )
       .single();
     if (error) throw error;
 
@@ -203,7 +231,11 @@ export const updateClaimReview = createServerFn({ method: "POST" })
       session_id: existing.session_id,
       case_id: sessionRow?.case_id ?? null,
       action: "claim.reviewed",
-      detail: { claim_id: data.claimId, review: data.review, reviewer_note: data.reviewerNote ?? null },
+      detail: {
+        claim_id: data.claimId,
+        review: data.review,
+        reviewer_note: data.reviewerNote ?? null,
+      },
     });
 
     const anchorsByClaim = await loadAnchors(db, [data.claimId]);
@@ -227,7 +259,9 @@ export const getClaimDetail = createServerFn({ method: "GET" })
     await requireReviewRole(db, context.userId);
     const { data: row, error } = await db
       .from("claims")
-      .select("id, session_id, type, text, confidence, support, review_status, reviewer_note, warning")
+      .select(
+        "id, session_id, type, text, confidence, support, review_status, reviewer_note, warning",
+      )
       .eq("id", data.claimId)
       .eq("session_id", data.sessionId)
       .maybeSingle();
@@ -252,7 +286,10 @@ export const getClaimDetail = createServerFn({ method: "GET" })
 
     const anchorsByClaim = await loadAnchors(db, [data.claimId]);
     return {
-      claim: { ...asClaim(row as ClaimRow, anchorsByClaim.get(data.claimId) ?? []), sessionId: data.sessionId },
+      claim: {
+        ...asClaim(row as ClaimRow, anchorsByClaim.get(data.claimId) ?? []),
+        sessionId: data.sessionId,
+      },
       anchors: (anchorRows ?? []) as ClaimAnchorRow[],
       history: buildReviewHistory((logs ?? []) as AuditLogLike[], data.claimId),
       currentUserId: context.userId,
