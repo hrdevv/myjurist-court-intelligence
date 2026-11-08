@@ -94,33 +94,6 @@ export const recordEvidence = createServerFn({ method: "POST" })
     return row as EvidenceRow;
   });
 
-/** Mints a short-lived signed download URL for a stored evidence file. */
-export const getEvidenceSignedUrl = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: { evidenceId: string }) =>
-    z.object({ evidenceId: z.string().uuid() }).parse(data),
-  )
-  .handler(async ({ data, context }): Promise<{ url: string }> => {
-    const { supabase } = context;
-    const { data: row, error } = await supabase
-      .from("evidence")
-      .select("storage_path")
-      .eq("id", data.evidenceId)
-      .maybeSingle();
-    if (error) throw error;
-    if (!row?.storage_path) {
-      throw new Error("This evidence item has no downloadable file.");
-    }
-
-    const { data: signed, error: signErr } = await supabase.storage
-      .from(EVIDENCE_BUCKET)
-      .createSignedUrl(row.storage_path, 60);
-    if (signErr || !signed?.signedUrl) {
-      throw signErr ?? new Error("Could not create a download link.");
-    }
-    return { url: signed.signedUrl };
-  });
-
 /** Removes an evidence row (and its stored file) for a session member. */
 export const deleteEvidence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

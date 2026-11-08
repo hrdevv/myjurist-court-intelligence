@@ -92,33 +92,6 @@ export const recordRecording = createServerFn({ method: "POST" })
     return row as RecordingRow;
   });
 
-/** Mints a short-lived signed URL for playback/download of a stored recording. */
-export const getRecordingSignedUrl = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: { recordingId: string }) =>
-    z.object({ recordingId: z.string().uuid() }).parse(data),
-  )
-  .handler(async ({ data, context }): Promise<{ url: string }> => {
-    const { supabase } = context;
-    const { data: row, error } = await supabase
-      .from("recordings")
-      .select("storage_path")
-      .eq("id", data.recordingId)
-      .maybeSingle();
-    if (error) throw error;
-    if (!row?.storage_path) {
-      throw new Error("This recording has no stored file.");
-    }
-
-    const { data: signed, error: signErr } = await supabase.storage
-      .from(RECORDINGS_BUCKET)
-      .createSignedUrl(row.storage_path, 60);
-    if (signErr || !signed?.signedUrl) {
-      throw signErr ?? new Error("Could not create a playback link.");
-    }
-    return { url: signed.signedUrl };
-  });
-
 /** Removes a recording row (and its stored file) for a session member. */
 export const deleteRecording = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

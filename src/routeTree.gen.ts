@@ -24,6 +24,7 @@ import { Route as AuthenticatedCasesCaseIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedSessionsSessionIdIndexRouteImport } from './routes/_authenticated.sessions.$sessionId.index'
 import { Route as AuthenticatedSessionsSessionIdReportRouteImport } from './routes/_authenticated.sessions.$sessionId.report'
 import { Route as AuthenticatedSessionsSessionIdReviewRouteImport } from './routes/_authenticated.sessions.$sessionId.review'
+import { Route as ApiMediaKindIdRouteImport } from './routes/api.media.$kind.$id'
 import { Route as AuthenticatedSessionsSessionIdClaimsClaimIdRouteImport } from './routes/_authenticated.sessions.$sessionId.claims.$claimId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -105,6 +106,11 @@ const AuthenticatedSessionsSessionIdReviewRoute =
     path: '/sessions/$sessionId/review',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiMediaKindIdRoute = ApiMediaKindIdRouteImport.update({
+  id: '/api/media/$kind/$id',
+  path: '/api/media/$kind/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSessionsSessionIdClaimsClaimIdRoute =
   AuthenticatedSessionsSessionIdClaimsClaimIdRouteImport.update({
     id: '/sessions/$sessionId/claims/$claimId',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/cases/': typeof AuthenticatedCasesIndexRoute
   '/sessions/$sessionId/report': typeof AuthenticatedSessionsSessionIdReportRoute
   '/sessions/$sessionId/review': typeof AuthenticatedSessionsSessionIdReviewRoute
+  '/api/media/$kind/$id': typeof ApiMediaKindIdRoute
   '/sessions/$sessionId/': typeof AuthenticatedSessionsSessionIdIndexRoute
   '/sessions/$sessionId/claims/$claimId': typeof AuthenticatedSessionsSessionIdClaimsClaimIdRoute
 }
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/cases': typeof AuthenticatedCasesIndexRoute
   '/sessions/$sessionId/report': typeof AuthenticatedSessionsSessionIdReportRoute
   '/sessions/$sessionId/review': typeof AuthenticatedSessionsSessionIdReviewRoute
+  '/api/media/$kind/$id': typeof ApiMediaKindIdRoute
   '/sessions/$sessionId': typeof AuthenticatedSessionsSessionIdIndexRoute
   '/sessions/$sessionId/claims/$claimId': typeof AuthenticatedSessionsSessionIdClaimsClaimIdRoute
 }
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/_authenticated/cases/': typeof AuthenticatedCasesIndexRoute
   '/_authenticated/sessions/$sessionId/report': typeof AuthenticatedSessionsSessionIdReportRoute
   '/_authenticated/sessions/$sessionId/review': typeof AuthenticatedSessionsSessionIdReviewRoute
+  '/api/media/$kind/$id': typeof ApiMediaKindIdRoute
   '/_authenticated/sessions/$sessionId/': typeof AuthenticatedSessionsSessionIdIndexRoute
   '/_authenticated/sessions/$sessionId/claims/$claimId': typeof AuthenticatedSessionsSessionIdClaimsClaimIdRoute
 }
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/cases/'
     | '/sessions/$sessionId/report'
     | '/sessions/$sessionId/review'
+    | '/api/media/$kind/$id'
     | '/sessions/$sessionId/'
     | '/sessions/$sessionId/claims/$claimId'
   fileRoutesByTo: FileRoutesByTo
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/cases'
     | '/sessions/$sessionId/report'
     | '/sessions/$sessionId/review'
+    | '/api/media/$kind/$id'
     | '/sessions/$sessionId'
     | '/sessions/$sessionId/claims/$claimId'
   id:
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cases/'
     | '/_authenticated/sessions/$sessionId/report'
     | '/_authenticated/sessions/$sessionId/review'
+    | '/api/media/$kind/$id'
     | '/_authenticated/sessions/$sessionId/'
     | '/_authenticated/sessions/$sessionId/claims/$claimId'
   fileRoutesById: FileRoutesById
@@ -224,6 +236,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiMediaKindIdRoute: typeof ApiMediaKindIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -333,6 +346,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSessionsSessionIdReviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/media/$kind/$id': {
+      id: '/api/media/$kind/$id'
+      path: '/api/media/$kind/$id'
+      fullPath: '/api/media/$kind/$id'
+      preLoaderRoute: typeof ApiMediaKindIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/sessions/$sessionId/claims/$claimId': {
       id: '/_authenticated/sessions/$sessionId/claims/$claimId'
       path: '/sessions/$sessionId/claims/$claimId'
@@ -386,6 +406,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiMediaKindIdRoute: ApiMediaKindIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

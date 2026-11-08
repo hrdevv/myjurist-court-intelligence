@@ -6,11 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   listRecordings,
   recordRecording,
-  getRecordingSignedUrl,
   deleteRecording,
   RECORDINGS_BUCKET,
   type RecordingRow,
 } from "@/lib/recordings.functions";
+import { fetchPrivateMedia } from "@/lib/private-media";
 import { AudioRecorder, sha256Blob } from "@/lib/audio-recorder";
 import { transcribeRecording } from "@/lib/transcript.functions";
 import { AudioPlayer } from "@/components/sessions/AudioPlayer";
@@ -45,16 +45,19 @@ function RecordingItem({
   onTranscribe: (id: string) => void;
   transcribing: boolean;
 }) {
-  const getUrl = useServerFn(getRecordingSignedUrl);
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => () => {
+    if (url) URL.revokeObjectURL(url);
+  }, [url]);
 
   async function loadPlayer() {
     if (url) return;
     setLoading(true);
     try {
-      const res = await getUrl({ data: { recordingId: recording.id } });
-      setUrl(res.url);
+      const file = await fetchPrivateMedia("recording", recording.id);
+      setUrl(URL.createObjectURL(file));
     } catch {
       toast.error("Could not load this recording.");
     } finally {

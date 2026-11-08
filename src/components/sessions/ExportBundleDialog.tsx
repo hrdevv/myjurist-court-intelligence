@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { downloadZip } from "client-zip";
 import { toast } from "sonner";
 import { getSessionExportManifest } from "@/lib/export.functions";
+import { fetchPrivateMedia } from "@/lib/private-media";
 import {
   bundleFileName,
   bundleManifestJson,
@@ -67,16 +68,15 @@ export function ExportBundleDialog({ sessionId }: { sessionId: string }) {
       }
 
       const wantAudio = options.audioWav || options.audioMp3;
-      const playable = manifest.recordings.filter((r) => r.url);
+      const playable = manifest.recordings.filter((r) => r.downloadable);
       let mp3Failures = 0;
 
       if (wantAudio) {
         for (let i = 0; i < playable.length; i += 1) {
           const rec = playable[i];
           setProgress(`Fetching audio ${i + 1} of ${playable.length}…`);
-          const res = await fetch(rec.url as string);
-          if (!res.ok) continue;
-          const bytes = await res.arrayBuffer();
+          const file = await fetchPrivateMedia("recording", rec.id);
+          const bytes = await file.arrayBuffer();
           const base = recordingBaseName(rec.createdAt, rec.id);
           const entry: { recordingId: string; wav?: string; mp3?: string } = { recordingId: rec.id };
 

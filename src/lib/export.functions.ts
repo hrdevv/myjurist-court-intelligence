@@ -3,8 +3,6 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { TranscriptSegmentRow } from "@/lib/transcript.functions";
 
-const RECORDINGS_BUCKET = "recordings";
-
 export interface ExportRecording {
   id: string;
   createdAt: string;
@@ -13,7 +11,7 @@ export interface ExportRecording {
   mime: string | null;
   checksum: string | null;
   status: string;
-  url: string | null;
+  downloadable: boolean;
 }
 
 export interface SessionExportManifest {
@@ -38,8 +36,9 @@ export const EXPORT_NOTICE =
 
 /**
  * Collects everything needed to build a session export bundle in the browser:
- * session/case metadata, ordered transcript segments, and signed URLs for each
- * stored recording. RLS scopes every read to session members.
+ * session/case metadata and ordered transcript segments. RLS scopes every read
+ * to session members; audio is fetched separately through the authenticated
+ * media route so no reusable storage URL leaves the server.
  */
 export const getSessionExportManifest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -75,16 +74,7 @@ export const getSessionExportManifest = createServerFn({ method: "POST" })
     if (segErr) throw segErr;
     if (recErr) throw recErr;
 
-    const exported: ExportRecording[] = [];
-    for (const r of recordings ?? []) {
-      let url: string | null = null;
-      if (r.storage_path) {
-        const { data: signed } = await supabase.storage
-          .from(RECORDINGS_BUCKET)
-          .createSignedUrl(r.storage_path, 60);
-        url = signed?.signedUrl ?? null;
-      }
-      exported.push({
+    const exported: ExportRecording[] = (recordings ?? []).map((r) => ({
         id: r.id,
         createdAt: r.created_at,
         durationSeconds: r.duration_seconds,
@@ -92,9 +82,8 @@ export const getSessionExportManifest = createServerFn({ method: "POST" })
         mime: r.mime,
         checksum: r.checksum,
         status: r.status,
-        url,
-      });
-    }
+        downloadable: Boolean(r.storage_path),
+      }));
 
     await supabase.from("audit_logs").insert({
       actor_id: userId,

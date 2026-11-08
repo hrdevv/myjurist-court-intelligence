@@ -6,11 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   listEvidence,
   recordEvidence,
-  getEvidenceSignedUrl,
   deleteEvidence,
   EVIDENCE_BUCKET,
   type EvidenceRow,
 } from "@/lib/evidence.functions";
+import { fetchPrivateMedia } from "@/lib/private-media";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +44,6 @@ export function EvidencePanel({ sessionId }: { sessionId: string }) {
   const queryClient = useQueryClient();
   const list = useServerFn(listEvidence);
   const record = useServerFn(recordEvidence);
-  const getUrl = useServerFn(getEvidenceSignedUrl);
   const remove = useServerFn(deleteEvidence);
 
   const fileRef = useRef<HTMLInputElement>(null);
@@ -104,8 +103,13 @@ export function EvidencePanel({ sessionId }: { sessionId: string }) {
 
   async function handleDownload(e: EvidenceRow) {
     try {
-      const { url } = await getUrl({ data: { evidenceId: e.id } });
-      window.open(url, "_blank", "noopener,noreferrer");
+      const file = await fetchPrivateMedia("evidence", e.id);
+      const url = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = e.name;
+      link.click();
+      URL.revokeObjectURL(url);
     } catch {
       toast.error("This item has no downloadable file.");
     }
